@@ -1,0 +1,20 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-robocup-staging-213547-authRole",
+      "UnauthRoleArn": "arn:aws:iam::073619244051:role/amplify-robocup-staging-213547-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::073619244051:role/amplify-robocup-staging-213547-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-robocup-staging-213547-deployment",
+      "UnauthRoleName": "amplify-robocup-staging-213547-unauthRole",
+      "StackName": "amplify-robocup-staging-213547",
+      "StackId": "arn:aws:cloudformation:eu-west-1:073619244051:stack/amplify-robocup-staging-213547/0d510660-af37-11ee-84ef-0a30ea6dc0fb",
+      "AmplifyAppId": "d1tjiglzxcxebu"
+    },
+    "categories": {
+      "auth": {
+        "robocup": {}
+      }
+    }
+  }
+}

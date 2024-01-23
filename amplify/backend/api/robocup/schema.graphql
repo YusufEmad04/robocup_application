@@ -1,0 +1,52 @@
+type CheckPointScore {
+  checkPointNumber: Int!
+  tilesPassed: Int!
+  totalLOP: Int!
+  gapsPassed: Int!
+  obstaclesPassed: Int!
+  intersectionsPassed: Int!
+  rampsPassed: Int!
+  speedBumpsPassed: Int!
+  seesawsPassed: Int!
+}
+
+type TotalScore {
+  checkPointsScores: [CheckPointScore!]!
+}
+
+type LineTrackingTeam @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String!
+  lineTrackingRounds: [LineTrackingRound] @hasMany(indexName: "byLineTrackingTeam", fields: ["id"])
+  robocupID: String
+}
+
+type CheckPoint @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  linetrackingmapID: ID! @index(name: "byLineTrackingMap")
+  tiles: Int!
+  gaps: Int
+  obstacles: Int
+  intersections: Int
+  ramps: Int
+  speedBumps: Int!
+  seesaws: Int
+  number: Int!
+}
+
+type LineTrackingMap @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  day: Int!
+  checkpoints: [CheckPoint] @hasMany(indexName: "byLineTrackingMap", fields: ["id"])
+}
+
+type LineTrackingRound @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  number: Int!
+  linetrackingteamID: ID! @index(name: "byLineTrackingTeam")
+  lineTrackingMap: LineTrackingMap! @hasOne
+  score: Int
+  hidden: Boolean
+  scoreDetails: TotalScore
+}
+ 
