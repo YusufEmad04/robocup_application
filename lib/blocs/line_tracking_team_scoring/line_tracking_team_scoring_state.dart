@@ -36,25 +36,34 @@ class LineTrackingTeamScoringInitial extends LineTrackingTeamScoringState {
 
 class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
   final String teamName;
-  final List<CheckPoint> checkPoints;
+  final TotalScore totalScore;
+  final LineTrackingMap map;
   final TimerState timerState;
 
-  const LineTrackingTeamScoringReady(this.teamName, this.checkPoints, this.timerState);
+  const LineTrackingTeamScoringReady({
+    required this.teamName,
+    required this.totalScore,
+    required this.map,
+    required this.timerState,
+  });
 
   LineTrackingTeamScoringReady copyWith({
     String? teamName,
-    List<CheckPoint>? checkPoints,
+    TotalScore? totalScore,
+    LineTrackingMap? map,
     TimerState? timerState,
   }) {
+
     return LineTrackingTeamScoringReady(
-      teamName ?? this.teamName,
-      checkPoints ?? this.checkPoints,
-      timerState ?? this.timerState,
+      teamName: teamName ?? this.teamName,
+      totalScore: totalScore ?? this.totalScore,
+      map: map ?? this.map,
+      timerState: timerState ?? this.timerState,
     );
   }
 
   @override
-  List<Object> get props => [teamName, checkPoints, timerState];
+  List<Object> get props => [teamName, totalScore, map, timerState];
 }
 
 class LineTrackingTeamScoringError extends LineTrackingTeamScoringState {

@@ -8,7 +8,7 @@ class LineTrackingTeamScoringLoad extends LineTrackingTeamScoringEvent {
   final String teamID;
   final String mapID;
 
-  const LineTrackingTeamScoringLoad(this.teamID, this.mapID);
+  const LineTrackingTeamScoringLoad({required this.teamID, required this.mapID});
 
   @override
   List<Object> get props => [teamID, mapID];
@@ -32,6 +32,15 @@ class LineTrackingTeamScoringTimerResumed extends LineTrackingTeamScoringEvent {
 class LineTrackingTeamScoringTimerReset extends LineTrackingTeamScoringEvent {
   @override
   List<Object> get props => [];
+}
+
+class LineTrackingTeamScoringCheckPointScoreEdited extends LineTrackingTeamScoringEvent {
+  final CheckPointScore checkPointScore;
+
+  const LineTrackingTeamScoringCheckPointScoreEdited(this.checkPointScore);
+
+  @override
+  List<Object> get props => [checkPointScore];
 }
 
 class _LineTrackingTeamScoringTimerTicked extends LineTrackingTeamScoringEvent {

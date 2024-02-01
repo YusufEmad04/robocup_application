@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:robocup/models/CheckPointScore.dart';
+import 'package:robocup/models/LineTrackingMap.dart';
 
 import '../../models/CheckPoint.dart';
+import '../../models/TotalScore.dart';
 import '../../repositories/line_tracking_repository.dart';
 
 part 'line_tracking_team_scoring_event.dart';
@@ -26,12 +29,16 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
   final LineTrackingRepository lineTrackingRepository;
 
-  LineTrackingTeamScoringBloc(this.lineTrackingRepository) : super(LineTrackingTeamScoringInitial()) {
+  TotalScore totalScore = TotalScore(checkPointsScores: []);
+
+  LineTrackingTeamScoringBloc({required this.lineTrackingRepository}) : super(LineTrackingTeamScoringInitial()) {
     on<LineTrackingTeamScoringLoad>(_onLineTrackingTeamScoringLoad);
     on<LineTrackingTeamScoringTimerStarted>(_onLineTrackingTeamScoringTimerStarted);
     on<LineTrackingTeamScoringTimerPaused>(_onLineTrackingTeamScoringTimerPaused);
     on<LineTrackingTeamScoringTimerResumed>(_onLineTrackingTeamScoringTimerResumed);
     on<_LineTrackingTeamScoringTimerTicked>(_onLineTrackingTeamScoringTimerTicked);
+    on<LineTrackingTeamScoringTimerReset>(_onLineTrackingTeamScoringTimerReset);
+    on<LineTrackingTeamScoringCheckPointScoreEdited>(_onLineTrackingTeamScoringCheckPointScoreEdited);
   }
 
   void _onLineTrackingTeamScoringLoad(LineTrackingTeamScoringLoad event, Emitter<LineTrackingTeamScoringState> emit) async {
@@ -39,8 +46,18 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
     final team = await lineTrackingRepository.getLineTrackingTeam(event.teamID);
     final map = await lineTrackingRepository.getLineTrackingMap(event.mapID);
 
+    _tickerSubscription?.cancel();
+    totalScore = totalScore.copyWith(checkPointsScores: []);
+
     if (team != null && map != null) {
-      emit(LineTrackingTeamScoringReady(team.name, map.checkpoints!, const TimerInitial(duration)));
+      emit(
+          LineTrackingTeamScoringReady(
+          teamName: team.name,
+          totalScore: totalScore,
+          map: map,
+          timerState: const TimerInitial(duration)
+          )
+      );
     } else {
       emit(LineTrackingTeamScoringError());
     }
@@ -77,6 +94,37 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         emit((state as LineTrackingTeamScoringReady).copyWith(timerState: TimerRunInProgress((state as LineTrackingTeamScoringReady).timerState.time)));
       }
     }
+  }
+
+  void _onLineTrackingTeamScoringTimerReset(LineTrackingTeamScoringTimerReset event, Emitter<LineTrackingTeamScoringState> emit) async {
+    if (state is LineTrackingTeamScoringReady) {
+      _tickerSubscription?.cancel();
+      emit((state as LineTrackingTeamScoringReady).copyWith(timerState: const TimerInitial(duration)));
+    }
+  }
+
+  void _onLineTrackingTeamScoringCheckPointScoreEdited(LineTrackingTeamScoringCheckPointScoreEdited event, Emitter<LineTrackingTeamScoringState> emit) async {
+    if (state is LineTrackingTeamScoringReady) {
+
+
+      // totalScore.checkPointsScores.removeWhere((element) => element.checkPointNumber == event.checkPointScore.checkPointNumber);
+      // totalScore.checkPointsScores.add(event.checkPointScore);
+
+      final checkPointScores = totalScore.checkPointsScores;
+      checkPointScores.removeWhere((element) => element.checkPointNumber == event.checkPointScore.checkPointNumber);
+      checkPointScores.add(event.checkPointScore);
+      // copy to change the reference
+      totalScore = totalScore.copyWith(checkPointsScores: checkPointScores);
+
+      emit((state as LineTrackingTeamScoringReady).copyWith(totalScore: totalScore));
+
+    }
+  }
+
+  @override
+  Future<void> close() {
+    _tickerSubscription?.cancel();
+    return super.close();
   }
 
 }

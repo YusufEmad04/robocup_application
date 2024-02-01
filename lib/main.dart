@@ -15,6 +15,7 @@ import 'package:robocup/pages/line_tracking_teams.dart';
 import 'package:robocup/repositories/line_tracking_repository.dart';
 
 import 'amplifyconfiguration.dart';
+import 'blocs/line_tracking_team_scoring/line_tracking_team_scoring_bloc.dart';
 import 'models/ModelProvider.dart';
 
 void main() {
@@ -52,9 +53,30 @@ class _MyAppState extends State<MyApp> {
                     pageBuilder: (context, state) => DialogPage(child: ChooseMapDialog(teamID: state.pathParameters['teamID']!,)),
                   ),
                   GoRoute(
+                    // confirmation dialog on exit
+                    onExit: (context) async{
+                      // show a dialog to confirm exit
+                      final result = await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Are you sure you want to exit?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Yes'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('No'),
+                            ),
+                          ],
+                        ),
+                      );
+                      return result ?? false;
+                    },
                     path: 'round-scoring/:mapID',
                     builder: (context, state) => LineTrackingTeamRoundScoring(teamID: state.pathParameters['teamID']!, mapID: state.pathParameters['mapID']!),
-                  )
+                  ),
                 ]
               )
             ]
@@ -102,6 +124,7 @@ class _MyAppState extends State<MyApp> {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(create: (_) => LineTrackingTeamsBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
+                BlocProvider(create: (_) => LineTrackingTeamScoringBloc(lineTrackingRepository: context.read<LineTrackingRepository>()))
               ],
               child: MaterialApp.router(
                 builder: Authenticator.builder(),
