@@ -59,7 +59,10 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
         buildWhen: (previous, current) {
           if (current is LineTrackingTeamScoringReady && previous is LineTrackingTeamScoringReady) {
             // return previous.timerState != current.timerState;
-            if (previous.timerState != current.timerState && previous.map == current.map && previous.teamName == current.teamName) {
+            if (previous.timerState != current.timerState && previous.map == current.map && previous.teamName == current.teamName && previous.totalScore == current.totalScore) {
+              if (previous.timerState is TimerInitial || current.timerState is TimerInitial){
+                return true;
+              }
               return false;
             } else {
               return true;
@@ -97,7 +100,13 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
                     SizedBox(
                         height: constraints.maxHeight * 0.8,
                         width: constraints.maxWidth,
-                        child: CheckPointsItems(checkPoints: state.map.checkpoints!)
+                        child: state.timerState is TimerInitial ? AbsorbPointer(
+                            absorbing: true,
+                            child: Container(
+                                color: Colors.grey[300],
+                                child: CheckPointsItems(checkPoints: state.map.checkpoints!)
+                            )
+                        ) : CheckPointsItems(checkPoints: state.map.checkpoints!)
                     ),
                   ],
                 );
@@ -201,7 +210,7 @@ class CheckPointsItems extends StatefulWidget {
 
 class _CheckPointsItemsState extends State<CheckPointsItems> {
 
-  int? checkPointScoringIndex = null;
+  int? checkPointScoringIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -211,18 +220,48 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
     }
 
     final state = context.read<LineTrackingTeamScoringBloc>().state as LineTrackingTeamScoringReady;
+    int totalLOP = 0;
+
+    print("total checkpoint scored: ${state.totalScore.checkPointsScores.length}");
+    for (var i in state.totalScore.checkPointsScores) {
+      print(i);
+      print("-------------------");
+      totalLOP += i.totalLOP;
+    }
 
     return checkPointScoringIndex == null?
     Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
+        Expanded(
+            child: Container(
+              alignment: Alignment.center,
+              color: Colors.grey[300],
+              child: Text("total LOP: $totalLOP",),
+            )
+        ),
         for (var i in widget.checkPoints) Expanded(
+          flex: 2,
           child: ListTile(
             title: Center(
                 child: Text(
                     "Check Point ${i.number}",
                     style: Theme.of(context).textTheme.headlineSmall
                 )
+            ),
+            trailing: Builder(
+              builder: (context){
+                final checkPointScore = state.totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == i.number);
+                if (checkPointScore != null) {
+                  if (checkPointScore.tilesPassed > 0) {
+                    return const Icon(Icons.check, color: Colors.green,);
+                  } else {
+                    return const Icon(Icons.close, color: Colors.red,);
+                  }
+                } else {
+                  return const Icon(Icons.close, color: Colors.red,);
+                }
+              }
             ),
             onTap: (){
               setState(() {
@@ -239,64 +278,61 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
 
         final checkPointScore = state.totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == checkPointNumber);
 
-        String gapsPassed = "0";
-        String tilesPassed = "0";
-        String obstaclesPassed = "0";
-        String intersectionsPassed = "0";
-        String rampsPassed = "0";
-        String speedBumpsPassed = "0";
-        String seesawsPassed = "0";
-        String totalLOP = "0";
+        int gapsPassed = 0;
+        int tilesPassed = 0;
+        int obstaclesPassed = 0;
+        int intersectionsPassed = 0;
+        int rampsPassed = 0;
+        int speedBumpsPassed = 0;
+        int seesawsPassed = 0;
+        int totalLOP = 0;
 
+        // get actual score passed
         if (checkPointScore != null){
-          gapsPassed = checkPointScore.gapsPassed.toString();
-          tilesPassed = checkPointScore.tilesPassed.toString();
-          obstaclesPassed = checkPointScore.obstaclesPassed.toString();
-          intersectionsPassed = checkPointScore.intersectionsPassed.toString();
-          rampsPassed = checkPointScore.rampsPassed.toString();
-          speedBumpsPassed = checkPointScore.speedBumpsPassed.toString();
-          seesawsPassed = checkPointScore.seesawsPassed.toString();
-          totalLOP = checkPointScore.totalLOP.toString();
+          gapsPassed = checkPointScore.gapsPassed;
+          tilesPassed = checkPointScore.tilesPassed;
+          obstaclesPassed = checkPointScore.obstaclesPassed;
+          intersectionsPassed = checkPointScore.intersectionsPassed;
+          rampsPassed = checkPointScore.rampsPassed;
+          speedBumpsPassed = checkPointScore.speedBumpsPassed;
+          seesawsPassed = checkPointScore.seesawsPassed;
+          totalLOP = checkPointScore.totalLOP;
         }
 
         // all controllers under each other
-        final gapCounter = widget.checkPoints[checkPointScoringIndex!].gaps! > 0 ? TextEditingController(text: gapsPassed) : null;
-        final obstacleCounter = widget.checkPoints[checkPointScoringIndex!].obstacles! > 0 ? TextEditingController(text: obstaclesPassed) : null;
-        final intersectionCounter = widget.checkPoints[checkPointScoringIndex!].intersections! > 0 ? TextEditingController(text: intersectionsPassed) : null;
-        final rampCounter = widget.checkPoints[checkPointScoringIndex!].ramps! > 0 ? TextEditingController(text: rampsPassed) : null;
-        final speedBumpCounter = widget.checkPoints[checkPointScoringIndex!].speedBumps > 0 ? TextEditingController(text: speedBumpsPassed) : null;
-        final seesawCounter = widget.checkPoints[checkPointScoringIndex!].seesaws! > 0 ? TextEditingController(text: seesawsPassed) : null;
-        final lopCounter = TextEditingController(text: totalLOP);
+        // get the max value for each item in the checkpoint
+        final gapCounter = widget.checkPoints[checkPointScoringIndex!].gaps! > 0 ? IntValue(value: gapsPassed) : null;
+        final obstacleCounter = widget.checkPoints[checkPointScoringIndex!].obstacles! > 0 ? IntValue(value: obstaclesPassed) : null;
+        final intersectionCounter = widget.checkPoints[checkPointScoringIndex!].intersections! > 0 ? IntValue(value: intersectionsPassed) : null;
+        final rampCounter = widget.checkPoints[checkPointScoringIndex!].ramps! > 0 ? IntValue(value: rampsPassed) : null;
+        final speedBumpCounter = widget.checkPoints[checkPointScoringIndex!].speedBumps > 0 ? IntValue(value: speedBumpsPassed) : null;
+        final seesawCounter = widget.checkPoints[checkPointScoringIndex!].seesaws! > 0 ? IntValue(value: seesawsPassed) : null;
+        final lopCounter = IntValue(value: totalLOP);
+        final checkPointBool = BoolValue(value: tilesPassed > 0);
 
         onChanged(){
           context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringCheckPointScoreEdited(
             CheckPointScore(
               checkPointNumber: checkPointNumber,
-              gapsPassed: gapCounter != null ? int.parse(gapCounter.value.text) : 0,
-              tilesPassed: widget.checkPoints[checkPointScoringIndex!].tiles,
-              obstaclesPassed: obstacleCounter != null ? int.parse(obstacleCounter.value.text) : 0,
-              intersectionsPassed: intersectionCounter != null ? int.parse(intersectionCounter.value.text) : 0,
-              rampsPassed: rampCounter != null ? int.parse(rampCounter.value.text) : 0,
-              speedBumpsPassed: speedBumpCounter != null ? int.parse(speedBumpCounter.value.text) : 0,
-              seesawsPassed: seesawCounter != null ? int.parse(seesawCounter.value.text) : 0,
-              totalLOP: int.parse(lopCounter.value.text),
-              // tilesPassed: widget.checkPoints[checkPointScoringIndex!].tiles,
-              // obstaclesPassed: int.parse(obstacleCounter!.value.text),
-              // intersectionsPassed: int.parse(intersectionCounter!.value.text),
-              // rampsPassed: int.parse(rampCounter!.value.text),
-              // speedBumpsPassed: int.parse(speedBumpCounter!.value.text),
-              // seesawsPassed: int.parse(seesawCounter!.value.text),
-              // totalLOP: int.parse(lopCounter.value.text),
+              gapsPassed: gapCounter != null ? gapCounter.value : 0,
+              tilesPassed: checkPointBool.value ? widget.checkPoints[checkPointScoringIndex!].tiles : 0,
+              obstaclesPassed: obstacleCounter != null ? obstacleCounter.value : 0,
+              intersectionsPassed: intersectionCounter != null ? intersectionCounter.value : 0,
+              rampsPassed: rampCounter != null ? rampCounter.value : 0,
+              speedBumpsPassed: speedBumpCounter != null ? speedBumpCounter.value : 0,
+              seesawsPassed: seesawCounter != null ? seesawCounter.value : 0,
+              totalLOP: lopCounter.value,
             )
           ));
         }
 
-        final gapCounterWidget = gapCounter != null ? HorizontalCounter(name: "Gaps", maxVal: widget.checkPoints[checkPointScoringIndex!].gaps!, controller: gapCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
-        final obstacleCounterWidget = obstacleCounter != null ? HorizontalCounter(name: "Obstacles", maxVal: widget.checkPoints[checkPointScoringIndex!].obstacles!, controller: obstacleCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
-        final intersectionCounterWidget = intersectionCounter != null ? HorizontalCounter(name: "Intersections", maxVal: widget.checkPoints[checkPointScoringIndex!].intersections!, controller: intersectionCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
-        final rampCounterWidget = rampCounter != null ? HorizontalCounter(name: "Ramps", maxVal: widget.checkPoints[checkPointScoringIndex!].ramps!, controller: rampCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
-        final speedBumpCounterWidget = speedBumpCounter != null ? HorizontalCounter(name: "Speed Bumps", maxVal: widget.checkPoints[checkPointScoringIndex!].speedBumps, controller: speedBumpCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
-        final seesawCounterWidget = seesawCounter != null ? HorizontalCounter(name: "Seesaws", maxVal: widget.checkPoints[checkPointScoringIndex!].seesaws!, controller: seesawCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : const SizedBox.shrink();
+        // maxVal for the number after the slash
+        final gapCounterWidget = gapCounter != null ? HorizontalCounter(name: "Gaps", maxVal: widget.checkPoints[checkPointScoringIndex!].gaps!, controller: gapCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final obstacleCounterWidget = obstacleCounter != null ? HorizontalCounter(name: "Obstacles", maxVal: widget.checkPoints[checkPointScoringIndex!].obstacles!, controller: obstacleCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final intersectionCounterWidget = intersectionCounter != null ? HorizontalCounter(name: "Intersections", maxVal: widget.checkPoints[checkPointScoringIndex!].intersections!, controller: intersectionCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final rampCounterWidget = rampCounter != null ? HorizontalCounter(name: "Ramps", maxVal: widget.checkPoints[checkPointScoringIndex!].ramps!, controller: rampCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final speedBumpCounterWidget = speedBumpCounter != null ? HorizontalCounter(name: "Speed Bumps", maxVal: widget.checkPoints[checkPointScoringIndex!].speedBumps, controller: speedBumpCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final seesawCounterWidget = seesawCounter != null ? HorizontalCounter(name: "Seesaws", maxVal: widget.checkPoints[checkPointScoringIndex!].seesaws!, controller: seesawCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
         final lopCounterWidget = HorizontalCounter(name: "LOP", maxVal: -1, controller: lopCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,);
 
         // final controllers = [gapCounter, obstacleCounter, intersectionCounter, rampCounter, speedBumpCounter, seesawCounter];
@@ -306,38 +342,43 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: Container(
-                  width: constraints.maxWidth,
-                  color: Colors.grey[300],
-                  padding: const EdgeInsets.all(8.0),
+                child: SingleChildScrollView(
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      for (var i in widgets) i,
+                      for (var i in widgets) i != null ? SizedBox(
+                        height: constraints.maxHeight * 0.2,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: i,
+                        ),
+                      ) : const SizedBox.shrink(),
+                      HorizontalCheckBox(controller: checkPointBool, onChanged: onChanged,),
+                      SizedBox(
+                        height: constraints.maxHeight * 0.1,
+                      )
                     ],
                   ),
-                  // child: ListView.builder(
-                  //   itemCount: widgets.length,
-                  //   itemBuilder: (context, index) {
-                  //     return ListTile(
-                  //       title: widgets[index],
-                  //     );
-                  //   },
-                  // ),
                 ),
               ),
-              Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      child: const Text("Back"),
-                      onPressed: (){
-                        setState(() {
-                          checkPointScoringIndex = null;
-                        });
-                      },
-                    )
-                  ]
+              Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          child: const Text("Back"),
+                          onPressed: (){
+                            setState(() {
+                              checkPointScoringIndex = null;
+                            });
+                          },
+                        )
+                      ]
+                  ),
+                ),
               )
             ]
         );
@@ -349,7 +390,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
 class HorizontalCounter extends StatefulWidget {
   final String name;
   final int maxVal;
-  final TextEditingController controller;
+  final IntValue controller;
   final int checkPointNumber;
   final onChanged;
 
@@ -362,15 +403,6 @@ class HorizontalCounter extends StatefulWidget {
 class _HorizontalCounterState extends State<HorizontalCounter> {
   @override
   Widget build(BuildContext context) {
-    // it will be like this
-    // - (count / maxVal) +  (name)
-    // decrement button count slash maxVal increment button (name on the right)
-    // only buttons are tappable
-    // increment and decrement buttons
-    // count and maxVal is just a text
-    // name is just a text
-
-    // wrap with layout builder and make the label only take the last 20% of the screen width
     return LayoutBuilder(
       builder: (context, constraints) {
         return Row(
@@ -380,9 +412,8 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
                   child: TextButton(
                       child: const Icon(Icons.remove),
                       onPressed: (){
-                        // controller value is string so we need to convert it to int
-                        if (int.parse(widget.controller.value.text) > 0) {
-                          widget.controller.value = TextEditingValue(text: (int.parse(widget.controller.value.text) - 1).toString());
+                        if (widget.controller.value > 0) {
+                          widget.controller.value--;
                         }
                         widget.onChanged();
                         setState(() {});
@@ -394,7 +425,7 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
                   width: constraints.maxWidth * 0.4,
                   child: Center(
                       child: Text(
-                          widget.maxVal == -1 ? widget.controller.value.text : "${widget.controller.value.text} / ${widget.maxVal}",
+                          widget.maxVal == -1 ? widget.controller.value.toString() : "${widget.controller.value} / ${widget.maxVal}",
                           style: Theme.of(context).textTheme.headlineLarge
                       )
                   )
@@ -405,16 +436,9 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
                       child: const Icon(Icons.add),
                       onPressed: (){
                         // controller value is string so we need to convert it to int
-                        if (int.parse(widget.controller.value.text) < widget.maxVal || widget.maxVal == -1) {
-                          widget.controller.value = TextEditingValue(text: (int.parse(widget.controller.value.text) + 1).toString());
+                        if (widget.controller.value < widget.maxVal || widget.maxVal == -1) {
+                          widget.controller.value ++;
                         }
-
-                        // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringCheckPointScoreEdited(
-                        //   CheckPointScore(
-                        //     checkPointNumber: widget.checkPointNumber,
-                        //     gapsP: int.parse(widget.controller.value.text),
-                        //   )
-                        // ));
                         widget.onChanged();
                         setState(() {});
                       }
@@ -429,4 +453,57 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
       }
     );
   }
+}
+
+class HorizontalCheckBox extends StatefulWidget {
+  final BoolValue controller;
+  final onChanged;
+
+  const HorizontalCheckBox({required this.controller, required this.onChanged, super.key});
+
+  @override
+  State<HorizontalCheckBox> createState() => _HorizontalCheckBoxState();
+}
+
+class _HorizontalCheckBoxState extends State<HorizontalCheckBox> {
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Row(
+          children: [
+            SizedBox(
+              width: constraints.maxWidth * 0.8,
+              child: Transform.scale(
+                scale: 1.5,
+                child: Checkbox(
+                  value: widget.controller.value,
+                  onChanged: (value){
+                    widget.controller.value = value!;
+                    widget.onChanged();
+                    setState(() {});
+                  },
+                ),
+              ),
+            ),
+            SizedBox(
+              width: constraints.maxWidth * 0.2,
+              child: const Center(child: Text("CheckPoint Passed"))
+            )
+          ]
+        );
+      }
+    );
+  }
+}
+
+
+class BoolValue{
+  bool value;
+  BoolValue({required this.value});
+}
+
+class IntValue{
+  int value;
+  IntValue({required this.value});
 }
