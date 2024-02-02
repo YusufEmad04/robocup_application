@@ -6,6 +6,8 @@ import 'package:robocup/models/CheckPointScore.dart';
 import 'package:robocup/models/LineTrackingMap.dart';
 
 import '../../models/CheckPoint.dart';
+import '../../models/LineTrackingRound.dart';
+import '../../models/LineTrackingTeam.dart';
 import '../../models/TotalScore.dart';
 import '../../repositories/line_tracking_repository.dart';
 
@@ -31,6 +33,9 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
   TotalScore totalScore = TotalScore(checkPointsScores: []);
 
+  LineTrackingTeam? team;
+  LineTrackingMap? map;
+
   LineTrackingTeamScoringBloc({required this.lineTrackingRepository}) : super(LineTrackingTeamScoringInitial()) {
     on<LineTrackingTeamScoringLoad>(_onLineTrackingTeamScoringLoad);
     on<LineTrackingTeamScoringTimerStarted>(_onLineTrackingTeamScoringTimerStarted);
@@ -39,12 +44,14 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
     on<_LineTrackingTeamScoringTimerTicked>(_onLineTrackingTeamScoringTimerTicked);
     on<LineTrackingTeamScoringTimerReset>(_onLineTrackingTeamScoringTimerReset);
     on<LineTrackingTeamScoringCheckPointScoreEdited>(_onLineTrackingTeamScoringCheckPointScoreEdited);
+    on<LineTrackingTeamScoringRoundEnded>(_onLineTrackingTeamScoringRoundEnded);
+    on<LineTrackingTeamScoringExit>(_onLineTrackingTeamScoringExit);
   }
 
   void _onLineTrackingTeamScoringLoad(LineTrackingTeamScoringLoad event, Emitter<LineTrackingTeamScoringState> emit) async {
 
-    final team = await lineTrackingRepository.getLineTrackingTeam(event.teamID);
-    final map = await lineTrackingRepository.getLineTrackingMap(event.mapID);
+    team = await lineTrackingRepository.getLineTrackingTeam(event.teamID);
+    map = await lineTrackingRepository.getLineTrackingMap(event.mapID);
 
     _tickerSubscription?.cancel();
     totalScore = totalScore.copyWith(checkPointsScores: []);
@@ -52,9 +59,9 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
     if (team != null && map != null) {
       emit(
           LineTrackingTeamScoringReady(
-          teamName: team.name,
+          team: team!,
           totalScore: totalScore,
-          map: map,
+          map: map!,
           timerState: const TimerInitial(duration)
           )
       );
@@ -66,6 +73,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
   void _onLineTrackingTeamScoringTimerStarted(LineTrackingTeamScoringTimerStarted event, Emitter<LineTrackingTeamScoringState> emit) async {
     _tickerSubscription?.cancel();
+    add(_LineTrackingTeamScoringTimerTicked(duration));
     _tickerSubscription = _ticker
         .tick(ticks: duration)
         .listen((duration) => add(_LineTrackingTeamScoringTimerTicked(duration)));
@@ -99,7 +107,8 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
   void _onLineTrackingTeamScoringTimerReset(LineTrackingTeamScoringTimerReset event, Emitter<LineTrackingTeamScoringState> emit) async {
     if (state is LineTrackingTeamScoringReady) {
       _tickerSubscription?.cancel();
-      emit((state as LineTrackingTeamScoringReady).copyWith(timerState: const TimerInitial(duration)));
+      totalScore = totalScore.copyWith(checkPointsScores: []);
+      emit((state as LineTrackingTeamScoringReady).copyWith(timerState: const TimerInitial(duration), totalScore: totalScore));
     }
   }
 
@@ -119,6 +128,48 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
       emit((state as LineTrackingTeamScoringReady).copyWith(totalScore: totalScore));
 
     }
+  }
+
+  void _onLineTrackingTeamScoringRoundEnded(LineTrackingTeamScoringRoundEnded event, Emitter<LineTrackingTeamScoringState> emit) async {
+    if (state is LineTrackingTeamScoringReady || state is LineTrackingTeamRoundEndError) {
+      _tickerSubscription?.cancel();
+      // TODO: add round in the repository
+      emit(LineTrackingTeamScoringLoading());
+
+      final teamWithRounds = await lineTrackingRepository.getLineTrackingTeam(team!.id, withRounds: true);
+
+      int roundNumber = 1;
+
+      if(teamWithRounds != null){
+        roundNumber = teamWithRounds.lineTrackingRounds == null ? 1 : teamWithRounds.lineTrackingRounds!.length + 1;
+      } else {
+        roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
+      }
+
+      final round = LineTrackingRound(
+        linetrackingteamID: team!.id,
+        scoreDetails: totalScore,
+        lineTrackingMap: map!,
+        number: roundNumber,
+        lineTrackingRoundLineTrackingMapId: map!.id,
+      );
+
+
+      final result = await lineTrackingRepository.createLineTrackingRound(round);
+      if (result != null) {
+        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!));
+      } else {
+        //TODO save the data locally so that it is not lost
+        emit(LineTrackingTeamRoundEndError());
+      }
+
+
+    }
+  }
+
+  void _onLineTrackingTeamScoringExit(LineTrackingTeamScoringExit event, Emitter<LineTrackingTeamScoringState> emit) async {
+    _tickerSubscription?.cancel();
+    emit(LineTrackingTeamScoringInitial());
   }
 
   @override

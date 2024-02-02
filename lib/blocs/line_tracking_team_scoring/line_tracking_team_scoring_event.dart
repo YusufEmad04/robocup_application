@@ -43,6 +43,16 @@ class LineTrackingTeamScoringCheckPointScoreEdited extends LineTrackingTeamScori
   List<Object> get props => [checkPointScore];
 }
 
+class LineTrackingTeamScoringRoundEnded extends LineTrackingTeamScoringEvent {
+  @override
+  List<Object> get props => [];
+}
+
+class LineTrackingTeamScoringExit extends LineTrackingTeamScoringEvent {
+  @override
+  List<Object> get props => [];
+}
+
 class _LineTrackingTeamScoringTimerTicked extends LineTrackingTeamScoringEvent {
   final int duration;
 

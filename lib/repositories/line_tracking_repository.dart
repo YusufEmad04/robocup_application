@@ -2,6 +2,7 @@ import 'package:amplify_api/amplify_api.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:robocup/models/LineTrackingMap.dart';
 import 'package:collection/collection.dart';
+import 'package:robocup/models/ModelProvider.dart';
 import '../models/LineTrackingRound.dart';
 import '../models/LineTrackingTeam.dart';
 
@@ -126,7 +127,7 @@ class LineTrackingRepository {
 
   }
 
-  Future<LineTrackingTeam?> getLineTrackingTeam(String id) async {
+  Future<LineTrackingTeam?> getLineTrackingTeam(String id, {withRounds = false}) async {
     final team = lineTrackingTeams.firstWhereOrNull((element) => element.id == id);
 
     if (team == null){
@@ -138,14 +139,21 @@ class LineTrackingRepository {
       if (lineTrackingTeamItems != null) {
         for (var item in lineTrackingTeamItems) {
           lineTrackingTeams.add(item!);
-          return item;
+          if (withRounds){
+            await loadLineTrackingTeamRounds(item.id);
+          }
+          return lineTrackingTeams.firstWhere((element) => element.id == item.id);
         }
       } else {
         return null;
       }
     }
-
-    return team;
+    if (withRounds){
+      await loadLineTrackingTeamRounds(id);
+      return lineTrackingTeams.firstWhere((element) => element.id == id);
+    } else {
+      return team;
+    }
   }
 
   Future<LineTrackingMap?> getLineTrackingMap(String id) async {
@@ -198,6 +206,33 @@ class LineTrackingRepository {
     }
 
     return map;
+  }
+
+  Future<LineTrackingRound?> createLineTrackingRound(LineTrackingRound round) async {
+    final createLineTrackingRoundRequest = ModelMutations.create(round);
+    final createLineTrackingRoundResponse = await Amplify.API.mutate(request: createLineTrackingRoundRequest).response;
+
+    final lineTrackingRoundItem = createLineTrackingRoundResponse.data;
+
+    if (lineTrackingRoundItem != null) {
+
+      final team = lineTrackingTeams.firstWhere((element) => element.id == round.linetrackingteamID);
+
+      if (team.lineTrackingRounds == null){
+        final lineTrackingRounds = <LineTrackingRound>[];
+        lineTrackingRounds.add(lineTrackingRoundItem);
+        final updatedTeam = team.copyWith(lineTrackingRounds: lineTrackingRounds);
+        lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
+        lineTrackingTeams.add(updatedTeam);
+      } else {
+        final updatedTeam = team.copyWith(lineTrackingRounds: [...team.lineTrackingRounds!, lineTrackingRoundItem]);
+        lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
+        lineTrackingTeams.add(updatedTeam);
+      }
+      return lineTrackingRoundItem;
+    } else {
+      return null;
+    }
   }
 
 }

@@ -1,9 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:robocup/models/CheckPointScore.dart';
 import '../blocs/line_tracking_team_scoring/line_tracking_team_scoring_bloc.dart';
 import '../models/CheckPoint.dart';
+
+
+Future<bool> _showDialog(context, String title, String text, String left, String right) async {
+
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(
+          text,
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: Text(left),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: Text(right),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+        ],
+      );
+    },
+  );
+  if (result != null) {
+    return result;
+  } else {
+    return false;
+  }
+}
 
 class LineTrackingTeamRoundScoring extends StatelessWidget {
 
@@ -11,41 +53,6 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
   final String teamID;
 
   const LineTrackingTeamRoundScoring({required this.mapID, required this.teamID, super.key});
-
-  void _showBackDialog(context) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Are you sure?'),
-          content: const Text(
-            'Are you sure you want to leave this page?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Nevermind'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: const Text('Leave'),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +66,8 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
         buildWhen: (previous, current) {
           if (current is LineTrackingTeamScoringReady && previous is LineTrackingTeamScoringReady) {
             // return previous.timerState != current.timerState;
-            if (previous.timerState != current.timerState && previous.map == current.map && previous.teamName == current.teamName && previous.totalScore == current.totalScore) {
-              if (previous.timerState is TimerInitial || current.timerState is TimerInitial){
+            if (previous.timerState != current.timerState && previous.map == current.map && previous.team == current.team && previous.totalScore == current.totalScore) {
+              if (previous.timerState is TimerInitial || current.timerState is TimerInitial || current.timerState is TimerRunComplete){
                 return true;
               }
               return false;
@@ -77,9 +84,12 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
             context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
             return const Center(child: CircularProgressIndicator());
           } else if (state is LineTrackingTeamScoringReady) {
-            if (mapID != state.map.id) {
+            if (mapID != state.map.id || teamID != state.team.id) {
               context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
               return const Center(child: CircularProgressIndicator());
+            }
+            if(state.timerState is TimerRunComplete){
+              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
             }
             state.map.checkpoints!.sort((a, b) => a.number.compareTo(b.number));
             return LayoutBuilder(
@@ -112,7 +122,78 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
                 );
               },
             );
-          } else {
+          } else if(state is LineTrackingTeamRoundEnd) {
+
+            if (mapID != state.map.id || teamID != state.team.id) {
+              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final widgets = [];
+
+            for (var checkPoint in state.map.checkpoints!){
+              final checkPointScore = state.totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == checkPoint.number);
+              if (checkPointScore == null) {
+                continue;
+              }
+              final checkPointTotalLOP = checkPointScore.totalLOP;
+              int tilesTotalScore = checkPointScore.tilesPassed;
+              if (checkPointTotalLOP == 0) {
+                tilesTotalScore *= 5;
+              } else if (checkPointTotalLOP == 1) {
+                tilesTotalScore *= 3;
+              } else if (checkPointTotalLOP == 2) {
+                tilesTotalScore *= 1;
+              } else {
+                tilesTotalScore = 0;
+              }
+
+              widgets.add(Text("Check Point ${checkPoint.number}"));
+              widgets.add(Text("Number of Tiles: ${checkPoint.tiles}"));
+              widgets.add(Text("Total LOP: $checkPointTotalLOP"));
+              widgets.add(Text("Tiles Score: ${checkPointScore.tilesPassed} * ${checkPointTotalLOP == 0 ? 5 : checkPointTotalLOP == 1 ? 3 : checkPointTotalLOP == 2 ? 1 : 0} = $tilesTotalScore"));
+              widgets.add(checkPoint.gaps! > 0 ? Text("Gaps Score: (gaps passed: ${checkPointScore.gapsPassed} / ${checkPoint.gaps!}) ${checkPointScore.gapsPassed} * 10 = ${checkPointScore.gapsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!}) ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}") : const SizedBox.shrink());
+              widgets.add(checkPoint.intersections! > 0 ? Text("Intersections Score: (intersections passed: ${checkPointScore.intersectionsPassed} / ${checkPoint.intersections!}) ${checkPointScore.intersectionsPassed} * 10 = ${checkPointScore.intersectionsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.ramps! > 0 ? Text("Ramps Score: (ramps passed: ${checkPointScore.rampsPassed} / ${checkPoint.ramps!}) ${checkPointScore.rampsPassed} * 10 = ${checkPointScore.rampsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps}) ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}") : const SizedBox.shrink());
+              widgets.add(checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!}) ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}") : const SizedBox.shrink());
+              widgets.add(const Divider());
+
+            }
+
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Text(
+                    "Round Ended\n\n",
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                  ElevatedButton(
+                    onPressed: (){
+                      context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringExit());
+                      context.go("/line-tracking/teams");
+                    },
+                    child: const Text("Done"),
+                  ),
+                  const Divider(),
+                  for (var i in widgets) i,
+                ]
+              ),
+            );
+
+          }
+          else if (state is LineTrackingTeamRoundEndError) {
+            return Center(
+              child: ElevatedButton(
+                child: const Text("Retry"),
+                onPressed: (){
+                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
+                },
+              ),
+            );
+          }
+          else {
             return Center(
               child: ElevatedButton(
                 child: const Text("Retry"),
@@ -146,50 +227,86 @@ class Timer extends StatelessWidget {
           final minutesStr = ((state.timerState.time / 60) % 60).floor().toString().padLeft(2, '0');
           final secondsStr = (state.timerState.time % 60).floor().toString().padLeft(2, '0');
           return Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints){
-                      return IconButton(
-                        icon: state.timerState is TimerRunInProgress ? Icon(Icons.pause, size: constraints.maxHeight * 0.7,) : Icon(Icons.play_arrow, size: constraints.maxHeight * 0.7,),
-                        onPressed: (){
-                          if (state.timerState is TimerRunInProgress) {
-                            context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerPaused());
-                          } else {
-                            if (state.timerState is TimerRunPause) {
-                              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerResumed());
-                            } else {
-                              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerStarted());
-                            }
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      '$minutesStr:$secondsStr',
-                      style: MediaQuery.sizeOf(context).height > MediaQuery.sizeOf(context).width ? Theme.of(context).textTheme.displaySmall : Theme.of(context).textTheme.displayLarge,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Column(
+                  children: [
+                    SizedBox(
+                      height: constraints.maxHeight * 0.7,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: IconButton(
+                              icon: state.timerState is TimerRunInProgress ? Icon(Icons.pause, size: constraints.maxHeight * 0.7,) : Icon(Icons.play_arrow, size: constraints.maxHeight * 0.7,),
+                              onPressed: (){
+                                if (state.timerState is TimerRunInProgress) {
+                                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerPaused());
+                                } else {
+                                  if (state.timerState is TimerRunPause) {
+                                    context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerResumed());
+                                  } else {
+                                    context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerStarted());
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                          Expanded(
+                              child: Center(
+                                child: Text(
+                                  '$minutesStr:$secondsStr',
+                                  style: MediaQuery.sizeOf(context).height > MediaQuery.sizeOf(context).width ? Theme.of(context).textTheme.displaySmall : Theme.of(context).textTheme.displayLarge,
+                                ),
+                              )
+                          ),
+                          Expanded(
+                            child: IconButton(
+                              icon: Icon(Icons.replay, size: constraints.maxHeight * 0.7,),
+                              onPressed: (){
+                                // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
+                                if (state.timerState is! TimerInitial){
+                                  _showDialog(context, "Reset Timer", "Are you sure you want to reset the timer?", "Yes", "No").then((value) {
+                                    if (value) {
+                                      context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
+                                    }
+                                  });
+                                }
+                              },
+                            )
+                          ),
+                        ],
+                      ),
                     ),
-                  )
-                ),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints){
-                      return IconButton(
-                        icon: Icon(Icons.replay, size: constraints.maxHeight * 0.7,),
-                        onPressed: (){
-                          context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
-                        },
-                      );
-                    }
-                  ),
-                ),
-              ],
+                    SizedBox(
+                      height: constraints.maxHeight * 0.3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: ElevatedButton(
+                          // change size of the button
+                          style: ButtonStyle(
+                            minimumSize: MaterialStateProperty.all(Size(constraints.maxWidth * 0.3, constraints.maxHeight * 0.3)),
+                          ),
+                          child: const Text("End Round"),
+                          onPressed: (){
+                            // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringEndRound());
+                            if (state.timerState is! TimerInitial){
+                              _showDialog(context, "End Round", "Are you sure you want to end the round?", "Yes", "No").then((value) {
+                                if (value) {
+                                  print("end round");
+                                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
+                                } else {
+                                  print("don't end round");
+                                }
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              },
             )
           );
         } else {

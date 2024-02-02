@@ -34,28 +34,34 @@ class LineTrackingTeamScoringInitial extends LineTrackingTeamScoringState {
   List<Object> get props => [];
 }
 
+class LineTrackingTeamScoringLoading extends LineTrackingTeamScoringState {
+
+  @override
+  List<Object> get props => [];
+}
+
 class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
-  final String teamName;
+  final LineTrackingTeam team;
   final TotalScore totalScore;
   final LineTrackingMap map;
   final TimerState timerState;
 
   const LineTrackingTeamScoringReady({
-    required this.teamName,
+    required this.team,
     required this.totalScore,
     required this.map,
     required this.timerState,
   });
 
   LineTrackingTeamScoringReady copyWith({
-    String? teamName,
+    LineTrackingTeam? team,
     TotalScore? totalScore,
     LineTrackingMap? map,
     TimerState? timerState,
   }) {
 
     return LineTrackingTeamScoringReady(
-      teamName: teamName ?? this.teamName,
+      team: team ?? this.team,
       totalScore: totalScore ?? this.totalScore,
       map: map ?? this.map,
       timerState: timerState ?? this.timerState,
@@ -63,10 +69,27 @@ class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
   }
 
   @override
-  List<Object> get props => [teamName, totalScore, map, timerState];
+  List<Object> get props => [team, totalScore, map, timerState];
+}
+
+class LineTrackingTeamRoundEnd extends LineTrackingTeamScoringState {
+  final TotalScore totalScore;
+  final LineTrackingTeam team;
+  final LineTrackingMap map;
+
+  const LineTrackingTeamRoundEnd({required this.totalScore, required this.team, required this.map});
+
+  @override
+  List<Object> get props => [totalScore, team, map];
 }
 
 class LineTrackingTeamScoringError extends LineTrackingTeamScoringState {
+
+  @override
+  List<Object> get props => [];
+}
+
+class LineTrackingTeamRoundEndError extends LineTrackingTeamScoringState {
 
   @override
   List<Object> get props => [];
