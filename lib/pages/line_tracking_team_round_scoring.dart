@@ -152,12 +152,12 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               widgets.add(Text("Number of Tiles: ${checkPoint.tiles}"));
               widgets.add(Text("Total LOP: $checkPointTotalLOP"));
               widgets.add(Text("Tiles Score: ${checkPointScore.tilesPassed} * ${checkPointTotalLOP == 0 ? 5 : checkPointTotalLOP == 1 ? 3 : checkPointTotalLOP == 2 ? 1 : 0} = $tilesTotalScore"));
-              widgets.add(checkPoint.gaps! > 0 ? Text("Gaps Score: (gaps passed: ${checkPointScore.gapsPassed} / ${checkPoint.gaps!}) ${checkPointScore.gapsPassed} * 10 = ${checkPointScore.gapsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!}) ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}") : const SizedBox.shrink());
-              widgets.add(checkPoint.intersections! > 0 ? Text("Intersections Score: (intersections passed: ${checkPointScore.intersectionsPassed} / ${checkPoint.intersections!}) ${checkPointScore.intersectionsPassed} * 10 = ${checkPointScore.intersectionsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.ramps! > 0 ? Text("Ramps Score: (ramps passed: ${checkPointScore.rampsPassed} / ${checkPoint.ramps!}) ${checkPointScore.rampsPassed} * 10 = ${checkPointScore.rampsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps}) ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}") : const SizedBox.shrink());
-              widgets.add(checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!}) ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}") : const SizedBox.shrink());
+              widgets.add(checkPoint.gaps! > 0 ? Text("Gaps Score: (gaps passed: ${checkPointScore.gapsPassed} / ${checkPoint.gaps!})      ${checkPointScore.gapsPassed} * 10 = ${checkPointScore.gapsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!})      ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}") : const SizedBox.shrink());
+              widgets.add(checkPoint.intersections! > 0 ? Text("Intersections Score: (intersections passed: ${checkPointScore.intersectionsPassed} / ${checkPoint.intersections!})      ${checkPointScore.intersectionsPassed} * 10 = ${checkPointScore.intersectionsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.ramps! > 0 ? Text("Ramps Score: (ramps passed: ${checkPointScore.rampsPassed} / ${checkPoint.ramps!})      ${checkPointScore.rampsPassed} * 10 = ${checkPointScore.rampsPassed * 10}") : const SizedBox.shrink());
+              widgets.add(checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps})      ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}") : const SizedBox.shrink());
+              widgets.add(checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!})      ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}") : const SizedBox.shrink());
               widgets.add(const Divider());
 
             }
@@ -165,10 +165,14 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  Text(
-                    "Round Ended\n\n",
-                    style: Theme.of(context).textTheme.displayMedium,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "Round Ended",
+                      style: Theme.of(context).textTheme.displaySmall,
+                    ),
                   ),
+                  const Divider(),
                   ElevatedButton(
                     onPressed: (){
                       context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringExit());
@@ -193,7 +197,11 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               ),
             );
           }
-          else {
+          else if (state is LineTrackingTeamScoringLoading) {
+
+            return const Center(child: CircularProgressIndicator());
+
+          } else{
             return Center(
               child: ElevatedButton(
                 child: const Text("Retry"),
@@ -238,7 +246,7 @@ class Timer extends StatelessWidget {
                         children: [
                           Expanded(
                             child: IconButton(
-                              icon: state.timerState is TimerRunInProgress ? Icon(Icons.pause, size: constraints.maxHeight * 0.7,) : Icon(Icons.play_arrow, size: constraints.maxHeight * 0.7,),
+                              icon: state.timerState is TimerRunInProgress ? Icon(Icons.pause, size: constraints.maxHeight * 0.6,) : Icon(Icons.play_arrow, size: constraints.maxHeight * 0.6,),
                               onPressed: (){
                                 if (state.timerState is TimerRunInProgress) {
                                   context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerPaused());
@@ -262,7 +270,7 @@ class Timer extends StatelessWidget {
                           ),
                           Expanded(
                             child: IconButton(
-                              icon: Icon(Icons.replay, size: constraints.maxHeight * 0.7,),
+                              icon: Icon(Icons.replay, size: constraints.maxHeight * 0.6,),
                               onPressed: (){
                                 // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
                                 if (state.timerState is! TimerInitial){
@@ -351,6 +359,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Expanded(
+            flex: 1,
             child: Container(
               alignment: Alignment.center,
               color: Colors.grey[300],
@@ -358,7 +367,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
             )
         ),
         for (var i in widget.checkPoints) Expanded(
-          flex: 2,
+          flex: 3,
           child: ListTile(
             title: Center(
                 child: Text(
@@ -386,7 +395,8 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
               });
             },
           ),
-        )
+        ),
+        const Expanded(flex: 1, child: SizedBox.shrink())
       ],
     ) : LayoutBuilder(
       builder: (context, constraints) {
@@ -527,7 +537,7 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
               SizedBox(
                   width: constraints.maxWidth * 0.2,
                   child: TextButton(
-                      child: const Icon(Icons.remove),
+                      child: Icon(Icons.remove, size: constraints.maxWidth * 0.1,),
                       onPressed: (){
                         if (widget.controller.value > 0) {
                           widget.controller.value--;
@@ -539,18 +549,18 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
               ),
               // the count and maxVal
               SizedBox(
-                  width: constraints.maxWidth * 0.4,
+                  width: constraints.maxWidth * 0.3,
                   child: Center(
                       child: Text(
                           widget.maxVal == -1 ? widget.controller.value.toString() : "${widget.controller.value} / ${widget.maxVal}",
-                          style: Theme.of(context).textTheme.headlineLarge
+                          style: Theme.of(context).textTheme.headlineMedium
                       )
                   )
               ),
               SizedBox(
                   width: constraints.maxWidth * 0.2,
                   child: TextButton(
-                      child: const Icon(Icons.add),
+                      child: Icon(Icons.add, size: constraints.maxWidth * 0.1,),
                       onPressed: (){
                         // controller value is string so we need to convert it to int
                         if (widget.controller.value < widget.maxVal || widget.maxVal == -1) {
@@ -562,7 +572,7 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
                   )
               ),
               SizedBox(
-                  width: constraints.maxWidth * 0.2,
+                  width: constraints.maxWidth * 0.3,
                   child: Center(child: Text(widget.name))
               ),
             ]
@@ -590,7 +600,7 @@ class _HorizontalCheckBoxState extends State<HorizontalCheckBox> {
         return Row(
           children: [
             SizedBox(
-              width: constraints.maxWidth * 0.8,
+              width: constraints.maxWidth * 0.7,
               child: Transform.scale(
                 scale: 1.5,
                 child: Checkbox(
@@ -604,7 +614,7 @@ class _HorizontalCheckBoxState extends State<HorizontalCheckBox> {
               ),
             ),
             SizedBox(
-              width: constraints.maxWidth * 0.2,
+              width: constraints.maxWidth * 0.3,
               child: const Center(child: Text("CheckPoint Passed"))
             )
           ]
