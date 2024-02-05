@@ -1,3 +1,8 @@
+enum Category {
+  PRIMARY
+  OPEN
+}
+
 type CheckPointScore {
   checkPointNumber: Int!
   tilesPassed: Int!
@@ -8,6 +13,8 @@ type CheckPointScore {
   rampsPassed: Int!
   speedBumpsPassed: Int!
   seesawsPassed: Int!
+  livingVictimsCollected: Int!
+  deadVictimsCollected: Int!
 }
 
 type TotalScore {
@@ -19,6 +26,7 @@ type LineTrackingTeam @model @auth(rules: [{allow: private}]) {
   name: String!
   lineTrackingRounds: [LineTrackingRound] @hasMany(indexName: "byLineTrackingTeam", fields: ["id"])
   robocupID: String
+  category: Category!
 }
 
 type CheckPoint @model @auth(rules: [{allow: private}]) {
@@ -32,6 +40,8 @@ type CheckPoint @model @auth(rules: [{allow: private}]) {
   speedBumps: Int!
   seesaws: Int
   number: Int!
+  livingVictims: Int
+  deadVictims: Int
 }
 
 type LineTrackingMap @model @auth(rules: [{allow: private}]) {
@@ -48,5 +58,6 @@ type LineTrackingRound @model @auth(rules: [{allow: private}]) {
   score: Int
   hidden: Boolean
   scoreDetails: TotalScore
+  category: Category!
 }
  

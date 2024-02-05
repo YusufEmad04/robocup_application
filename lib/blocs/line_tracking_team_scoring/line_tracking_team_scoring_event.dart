@@ -7,11 +7,12 @@ abstract class LineTrackingTeamScoringEvent extends Equatable {
 class LineTrackingTeamScoringLoad extends LineTrackingTeamScoringEvent {
   final String teamID;
   final String mapID;
+  final String category;
 
-  const LineTrackingTeamScoringLoad({required this.teamID, required this.mapID});
+  const LineTrackingTeamScoringLoad({required this.teamID, required this.mapID, required this.category});
 
   @override
-  List<Object> get props => [teamID, mapID];
+  List<Object> get props => [teamID, mapID, category];
 }
 
 class LineTrackingTeamScoringTimerStarted extends LineTrackingTeamScoringEvent {

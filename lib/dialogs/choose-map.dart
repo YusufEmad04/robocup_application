@@ -6,7 +6,8 @@ import 'package:robocup/repositories/line_tracking_repository.dart';
 class ChooseMapDialog extends StatelessWidget {
 
   final String teamID;
-  const ChooseMapDialog({required this.teamID, super.key});
+  final String category;
+  const ChooseMapDialog({required this.category, required this.teamID, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,18 +17,17 @@ class ChooseMapDialog extends StatelessWidget {
       future: context.read<LineTrackingRepository>().getLineTrackingMaps(),
       builder: (context, snapshot){
         return AlertDialog(
-          title: Text("Add Round"),
-          content: Container(
+          title: const Text("Add Round"),
+          content: SizedBox(
             height: MediaQuery.sizeOf(context).height * 0.5,
             width: MediaQuery.sizeOf(context).width * 0.5,
             child: ListView.builder(
               itemCount: context.read<LineTrackingRepository>().lineTrackingMaps.length,
               itemBuilder: (context, index){
                 return ListTile(
-                  title: Text(context.read<LineTrackingRepository>().lineTrackingMaps[index].day.toString()),
+                  title: Text("Map: ${context.read<LineTrackingRepository>().lineTrackingMaps[index].day.toString()}"),
                   onTap: (){
-                    print("going to /line-tracking/teams/rounds/$teamID/round-scoring/${context.read<LineTrackingRepository>().lineTrackingMaps[index].id}");
-                    context.go("/line-tracking/teams/rounds/$teamID/round-scoring/${context.read<LineTrackingRepository>().lineTrackingMaps[index].id}");
+                    context.go("/line-tracking/$category/teams/rounds/$teamID/round-scoring/${context.read<LineTrackingRepository>().lineTrackingMaps[index].id}");
                   },
                 );
               },
@@ -35,15 +35,9 @@ class ChooseMapDialog extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
               onPressed: (){
-                context.go("/line-tracking/teams/rounds/$teamID");
-              },
-            ),
-            TextButton(
-              child: Text("Add"),
-              onPressed: (){
-
+                context.go("/line-tracking/$category/teams/rounds/$teamID");
               },
             )
           ],

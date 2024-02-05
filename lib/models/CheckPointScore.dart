@@ -34,6 +34,8 @@ class CheckPointScore {
   final int? _rampsPassed;
   final int? _speedBumpsPassed;
   final int? _seesawsPassed;
+  final int? _livingVictimsCollected;
+  final int? _deadVictimsCollected;
 
   int get checkPointNumber {
     try {
@@ -152,9 +154,35 @@ class CheckPointScore {
     }
   }
   
-  const CheckPointScore._internal({required checkPointNumber, required tilesPassed, required totalLOP, required gapsPassed, required obstaclesPassed, required intersectionsPassed, required rampsPassed, required speedBumpsPassed, required seesawsPassed}): _checkPointNumber = checkPointNumber, _tilesPassed = tilesPassed, _totalLOP = totalLOP, _gapsPassed = gapsPassed, _obstaclesPassed = obstaclesPassed, _intersectionsPassed = intersectionsPassed, _rampsPassed = rampsPassed, _speedBumpsPassed = speedBumpsPassed, _seesawsPassed = seesawsPassed;
+  int get livingVictimsCollected {
+    try {
+      return _livingVictimsCollected!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
   
-  factory CheckPointScore({required int checkPointNumber, required int tilesPassed, required int totalLOP, required int gapsPassed, required int obstaclesPassed, required int intersectionsPassed, required int rampsPassed, required int speedBumpsPassed, required int seesawsPassed}) {
+  int get deadVictimsCollected {
+    try {
+      return _deadVictimsCollected!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
+  const CheckPointScore._internal({required checkPointNumber, required tilesPassed, required totalLOP, required gapsPassed, required obstaclesPassed, required intersectionsPassed, required rampsPassed, required speedBumpsPassed, required seesawsPassed, required livingVictimsCollected, required deadVictimsCollected}): _checkPointNumber = checkPointNumber, _tilesPassed = tilesPassed, _totalLOP = totalLOP, _gapsPassed = gapsPassed, _obstaclesPassed = obstaclesPassed, _intersectionsPassed = intersectionsPassed, _rampsPassed = rampsPassed, _speedBumpsPassed = speedBumpsPassed, _seesawsPassed = seesawsPassed, _livingVictimsCollected = livingVictimsCollected, _deadVictimsCollected = deadVictimsCollected;
+  
+  factory CheckPointScore({required int checkPointNumber, required int tilesPassed, required int totalLOP, required int gapsPassed, required int obstaclesPassed, required int intersectionsPassed, required int rampsPassed, required int speedBumpsPassed, required int seesawsPassed, required int livingVictimsCollected, required int deadVictimsCollected}) {
     return CheckPointScore._internal(
       checkPointNumber: checkPointNumber,
       tilesPassed: tilesPassed,
@@ -164,7 +192,9 @@ class CheckPointScore {
       intersectionsPassed: intersectionsPassed,
       rampsPassed: rampsPassed,
       speedBumpsPassed: speedBumpsPassed,
-      seesawsPassed: seesawsPassed);
+      seesawsPassed: seesawsPassed,
+      livingVictimsCollected: livingVictimsCollected,
+      deadVictimsCollected: deadVictimsCollected);
   }
   
   bool equals(Object other) {
@@ -183,7 +213,9 @@ class CheckPointScore {
       _intersectionsPassed == other._intersectionsPassed &&
       _rampsPassed == other._rampsPassed &&
       _speedBumpsPassed == other._speedBumpsPassed &&
-      _seesawsPassed == other._seesawsPassed;
+      _seesawsPassed == other._seesawsPassed &&
+      _livingVictimsCollected == other._livingVictimsCollected &&
+      _deadVictimsCollected == other._deadVictimsCollected;
   }
   
   @override
@@ -202,13 +234,15 @@ class CheckPointScore {
     buffer.write("intersectionsPassed=" + (_intersectionsPassed != null ? _intersectionsPassed!.toString() : "null") + ", ");
     buffer.write("rampsPassed=" + (_rampsPassed != null ? _rampsPassed!.toString() : "null") + ", ");
     buffer.write("speedBumpsPassed=" + (_speedBumpsPassed != null ? _speedBumpsPassed!.toString() : "null") + ", ");
-    buffer.write("seesawsPassed=" + (_seesawsPassed != null ? _seesawsPassed!.toString() : "null"));
+    buffer.write("seesawsPassed=" + (_seesawsPassed != null ? _seesawsPassed!.toString() : "null") + ", ");
+    buffer.write("livingVictimsCollected=" + (_livingVictimsCollected != null ? _livingVictimsCollected!.toString() : "null") + ", ");
+    buffer.write("deadVictimsCollected=" + (_deadVictimsCollected != null ? _deadVictimsCollected!.toString() : "null"));
     buffer.write("}");
     
     return buffer.toString();
   }
   
-  CheckPointScore copyWith({int? checkPointNumber, int? tilesPassed, int? totalLOP, int? gapsPassed, int? obstaclesPassed, int? intersectionsPassed, int? rampsPassed, int? speedBumpsPassed, int? seesawsPassed}) {
+  CheckPointScore copyWith({int? checkPointNumber, int? tilesPassed, int? totalLOP, int? gapsPassed, int? obstaclesPassed, int? intersectionsPassed, int? rampsPassed, int? speedBumpsPassed, int? seesawsPassed, int? livingVictimsCollected, int? deadVictimsCollected}) {
     return CheckPointScore._internal(
       checkPointNumber: checkPointNumber ?? this.checkPointNumber,
       tilesPassed: tilesPassed ?? this.tilesPassed,
@@ -218,7 +252,9 @@ class CheckPointScore {
       intersectionsPassed: intersectionsPassed ?? this.intersectionsPassed,
       rampsPassed: rampsPassed ?? this.rampsPassed,
       speedBumpsPassed: speedBumpsPassed ?? this.speedBumpsPassed,
-      seesawsPassed: seesawsPassed ?? this.seesawsPassed);
+      seesawsPassed: seesawsPassed ?? this.seesawsPassed,
+      livingVictimsCollected: livingVictimsCollected ?? this.livingVictimsCollected,
+      deadVictimsCollected: deadVictimsCollected ?? this.deadVictimsCollected);
   }
   
   CheckPointScore copyWithModelFieldValues({
@@ -230,7 +266,9 @@ class CheckPointScore {
     ModelFieldValue<int>? intersectionsPassed,
     ModelFieldValue<int>? rampsPassed,
     ModelFieldValue<int>? speedBumpsPassed,
-    ModelFieldValue<int>? seesawsPassed
+    ModelFieldValue<int>? seesawsPassed,
+    ModelFieldValue<int>? livingVictimsCollected,
+    ModelFieldValue<int>? deadVictimsCollected
   }) {
     return CheckPointScore._internal(
       checkPointNumber: checkPointNumber == null ? this.checkPointNumber : checkPointNumber.value,
@@ -241,7 +279,9 @@ class CheckPointScore {
       intersectionsPassed: intersectionsPassed == null ? this.intersectionsPassed : intersectionsPassed.value,
       rampsPassed: rampsPassed == null ? this.rampsPassed : rampsPassed.value,
       speedBumpsPassed: speedBumpsPassed == null ? this.speedBumpsPassed : speedBumpsPassed.value,
-      seesawsPassed: seesawsPassed == null ? this.seesawsPassed : seesawsPassed.value
+      seesawsPassed: seesawsPassed == null ? this.seesawsPassed : seesawsPassed.value,
+      livingVictimsCollected: livingVictimsCollected == null ? this.livingVictimsCollected : livingVictimsCollected.value,
+      deadVictimsCollected: deadVictimsCollected == null ? this.deadVictimsCollected : deadVictimsCollected.value
     );
   }
   
@@ -254,10 +294,12 @@ class CheckPointScore {
       _intersectionsPassed = (json['intersectionsPassed'] as num?)?.toInt(),
       _rampsPassed = (json['rampsPassed'] as num?)?.toInt(),
       _speedBumpsPassed = (json['speedBumpsPassed'] as num?)?.toInt(),
-      _seesawsPassed = (json['seesawsPassed'] as num?)?.toInt();
+      _seesawsPassed = (json['seesawsPassed'] as num?)?.toInt(),
+      _livingVictimsCollected = (json['livingVictimsCollected'] as num?)?.toInt(),
+      _deadVictimsCollected = (json['deadVictimsCollected'] as num?)?.toInt();
   
   Map<String, dynamic> toJson() => {
-    'checkPointNumber': _checkPointNumber, 'tilesPassed': _tilesPassed, 'totalLOP': _totalLOP, 'gapsPassed': _gapsPassed, 'obstaclesPassed': _obstaclesPassed, 'intersectionsPassed': _intersectionsPassed, 'rampsPassed': _rampsPassed, 'speedBumpsPassed': _speedBumpsPassed, 'seesawsPassed': _seesawsPassed
+    'checkPointNumber': _checkPointNumber, 'tilesPassed': _tilesPassed, 'totalLOP': _totalLOP, 'gapsPassed': _gapsPassed, 'obstaclesPassed': _obstaclesPassed, 'intersectionsPassed': _intersectionsPassed, 'rampsPassed': _rampsPassed, 'speedBumpsPassed': _speedBumpsPassed, 'seesawsPassed': _seesawsPassed, 'livingVictimsCollected': _livingVictimsCollected, 'deadVictimsCollected': _deadVictimsCollected
   };
   
   Map<String, Object?> toMap() => {
@@ -269,7 +311,9 @@ class CheckPointScore {
     'intersectionsPassed': _intersectionsPassed,
     'rampsPassed': _rampsPassed,
     'speedBumpsPassed': _speedBumpsPassed,
-    'seesawsPassed': _seesawsPassed
+    'seesawsPassed': _seesawsPassed,
+    'livingVictimsCollected': _livingVictimsCollected,
+    'deadVictimsCollected': _deadVictimsCollected
   };
 
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
@@ -326,6 +370,18 @@ class CheckPointScore {
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.customTypeField(
       fieldName: 'seesawsPassed',
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.customTypeField(
+      fieldName: 'livingVictimsCollected',
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.customTypeField(
+      fieldName: 'deadVictimsCollected',
       isRequired: true,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
     ));

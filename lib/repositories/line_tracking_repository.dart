@@ -1,10 +1,11 @@
 import 'package:amplify_api/amplify_api.dart';
-import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:amplify_flutter/amplify_flutter.dart' hide Category;
 import 'package:robocup/models/LineTrackingMap.dart';
 import 'package:collection/collection.dart';
 import 'package:robocup/models/ModelProvider.dart';
 import '../models/LineTrackingRound.dart';
 import '../models/LineTrackingTeam.dart';
+import 'package:robocup/models/Category.dart';
 
 class LineTrackingRepository {
   final lineTrackingTeams = <LineTrackingTeam>[];
@@ -26,7 +27,7 @@ class LineTrackingRepository {
     }
   }
 
-  Future<void> loadLineTrackingTeamRounds(String id) async {
+  Future<LineTrackingTeam?> loadLineTrackingTeamRounds(String id) async {
 
     // if lineTrackingRounds remains null, then there should be an error
 
@@ -47,7 +48,9 @@ class LineTrackingRepository {
       final updatedTeam = team.copyWith(lineTrackingRounds: lineTrackingRounds);
       lineTrackingTeams.removeWhere((element) => element.id == id);
       lineTrackingTeams.add(updatedTeam);
-
+      return updatedTeam;
+    } else {
+      return null;
     }
   }
 
@@ -70,6 +73,8 @@ class LineTrackingRepository {
                 ramps
                 speedBumps
                 seesaws
+                livingVictims
+                deadVictims
                 number
             }
            }
@@ -106,11 +111,15 @@ class LineTrackingRepository {
 
   }
 
-  Future<List<LineTrackingTeam>?> getLineTrackingTeams() async {
+  Future<List<LineTrackingTeam>?> getLineTrackingTeams(String category) async {
     //TODO implement get line tracking teams method from repository
     // will be used instead of loadLineTrackingTeams
+    // TODO add category to the query
 
-    final lineTrackingTeamsRequest = ModelQueries.list(LineTrackingTeam.classType);
+    final lineTrackingTeamsRequest = ModelQueries.list(
+        LineTrackingTeam.classType,
+        where: LineTrackingTeam.CATEGORY.eq(category == "primary" ? Category.PRIMARY : Category.OPEN),
+    );
     final lineTrackingTeamsResponse = await Amplify.API.query(request: lineTrackingTeamsRequest).response;
 
     final lineTrackingTeamsItems = lineTrackingTeamsResponse.data?.items;
@@ -175,6 +184,8 @@ class LineTrackingRepository {
                 intersections
                 ramps
                 speedBumps
+                livingVictims
+                deadVictims
                 seesaws
                 number
             }

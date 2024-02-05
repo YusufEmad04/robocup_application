@@ -5,8 +5,9 @@ abstract class LineTrackingTeamsEvent extends Equatable {
 }
 
 class LineTrackingTeamsLoad extends LineTrackingTeamsEvent {
-  const LineTrackingTeamsLoad();
+  final String category;
+  const LineTrackingTeamsLoad({required this.category});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [category];
 }

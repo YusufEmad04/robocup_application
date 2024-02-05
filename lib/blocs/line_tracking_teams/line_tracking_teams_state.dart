@@ -22,9 +22,10 @@ class LineTrackingTeamsError extends LineTrackingTeamsState {
 class LineTrackingTeamsReady extends LineTrackingTeamsState {
 
   final List<LineTrackingTeam> lineTrackingTeams;
+  final String category;
 
-  const LineTrackingTeamsReady({required this.lineTrackingTeams});
+  const LineTrackingTeamsReady({required this.lineTrackingTeams, required this.category});
 
   @override
-  List<Object> get props => [lineTrackingTeams];
+  List<Object> get props => [lineTrackingTeams, category];
 }

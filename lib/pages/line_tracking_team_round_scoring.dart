@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:robocup/functtions/functions.dart';
 import 'package:robocup/models/CheckPointScore.dart';
 import '../blocs/line_tracking_team_scoring/line_tracking_team_scoring_bloc.dart';
 import '../models/CheckPoint.dart';
@@ -51,8 +52,9 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
 
   final String mapID;
   final String teamID;
+  final String category;
 
-  const LineTrackingTeamRoundScoring({required this.mapID, required this.teamID, super.key});
+  const LineTrackingTeamRoundScoring({required this.category, required this.mapID, required this.teamID, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,11 +83,11 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
 
         builder: (context, state) {
           if(state is LineTrackingTeamScoringInitial){
-            context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
+            context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID, category: category));
             return const Center(child: CircularProgressIndicator());
           } else if (state is LineTrackingTeamScoringReady) {
             if (mapID != state.map.id || teamID != state.team.id) {
-              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
+              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID, category: category));
               return const Center(child: CircularProgressIndicator());
             }
             if(state.timerState is TimerRunComplete){
@@ -124,8 +126,8 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
             );
           } else if(state is LineTrackingTeamRoundEnd) {
 
-            if (mapID != state.map.id || teamID != state.team.id) {
-              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
+            if (mapID != state.map.id || teamID != state.team.id || category != state.category) {
+              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID, category: category));
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -134,9 +136,19 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
             for (var checkPoint in state.map.checkpoints!){
               final checkPointScore = state.totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == checkPoint.number);
               if (checkPointScore == null) {
+                widgets.add(Text("Check Point ${checkPoint.number}"));
+                widgets.add(Text("Number of Tiles: ${checkPoint.tiles}"));
+                widgets.add(const Text("Total LOP: 0"));
+                widgets.add(const Text("Tiles Score: 0"));
+                widgets.add(const Divider());
                 continue;
               }
               final checkPointTotalLOP = checkPointScore.totalLOP;
+
+              if (checkPoint.tiles == 0) {
+                continue;
+              }
+
               int tilesTotalScore = checkPointScore.tilesPassed;
               if (checkPointTotalLOP == 0) {
                 tilesTotalScore *= 5;
@@ -151,16 +163,57 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               widgets.add(Text("Check Point ${checkPoint.number}"));
               widgets.add(Text("Number of Tiles: ${checkPoint.tiles}"));
               widgets.add(Text("Total LOP: $checkPointTotalLOP"));
-              widgets.add(Text("Tiles Score: ${checkPointScore.tilesPassed} * ${checkPointTotalLOP == 0 ? 5 : checkPointTotalLOP == 1 ? 3 : checkPointTotalLOP == 2 ? 1 : 0} = $tilesTotalScore"));
-              widgets.add(checkPoint.gaps! > 0 ? Text("Gaps Score: (gaps passed: ${checkPointScore.gapsPassed} / ${checkPoint.gaps!})      ${checkPointScore.gapsPassed} * 10 = ${checkPointScore.gapsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!})      ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}") : const SizedBox.shrink());
-              widgets.add(checkPoint.intersections! > 0 ? Text("Intersections Score: (intersections passed: ${checkPointScore.intersectionsPassed} / ${checkPoint.intersections!})      ${checkPointScore.intersectionsPassed} * 10 = ${checkPointScore.intersectionsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.ramps! > 0 ? Text("Ramps Score: (ramps passed: ${checkPointScore.rampsPassed} / ${checkPoint.ramps!})      ${checkPointScore.rampsPassed} * 10 = ${checkPointScore.rampsPassed * 10}") : const SizedBox.shrink());
-              widgets.add(checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps})      ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}") : const SizedBox.shrink());
-              widgets.add(checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!})      ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}") : const SizedBox.shrink());
+              // widgets.add(Text("Tiles Score: ${checkPointScore.tilesPassed} * ${checkPointTotalLOP == 0 ? 5 : checkPointTotalLOP == 1 ? 3 : checkPointTotalLOP == 2 ? 1 : 0} = $tilesTotalScore"));
+              widgets.add(
+                  Text("Tiles Score: ${checkPointScore.tilesPassed} * ${checkPointTotalLOP == 0 ? 5 : checkPointTotalLOP == 1 ? 3 : checkPointTotalLOP == 2 ? 1 : 0} = $tilesTotalScore", textAlign: TextAlign.center,)
+              );
+              widgets.add(
+                  checkPoint.gaps! > 0 ?
+                  Text("Gaps Score: (gaps passed: ${checkPointScore.gapsPassed} / ${checkPoint.gaps!})      ${checkPointScore.gapsPassed} * 10 = ${checkPointScore.gapsPassed * 10}", textAlign: TextAlign.center,)
+                      : const SizedBox.shrink()
+              );
+
+              widgets.add(
+                checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!})      ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}", textAlign: TextAlign.center,)
+                    : const SizedBox.shrink()
+              );
+              widgets.add(
+                checkPoint.intersections! > 0 ? Text("Intersections Score: (intersections passed: ${checkPointScore.intersectionsPassed} / ${checkPoint.intersections!})      ${checkPointScore.intersectionsPassed} * 10 = ${checkPointScore.intersectionsPassed * 10}", textAlign: TextAlign.center,)
+                    : const SizedBox.shrink()
+              );
+              widgets.add(
+                checkPoint.ramps! > 0 ? Text("Ramps Score: (ramps passed: ${checkPointScore.rampsPassed} / ${checkPoint.ramps!})      ${checkPointScore.rampsPassed} * 10 = ${checkPointScore.rampsPassed * 10}", textAlign: TextAlign.center,)
+                    : const SizedBox.shrink()
+              );
+              widgets.add(
+                checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps})      ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}", textAlign: TextAlign.center,)
+                    : const SizedBox.shrink()
+              );
+              widgets.add(
+                checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!})      ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}", textAlign: TextAlign.center,)
+                    : const SizedBox.shrink()
+              );
               widgets.add(const Divider());
 
             }
+
+            final evacuationZone = state.map.checkpoints!.firstWhereOrNull((element) => element.tiles == 0);
+            if (evacuationZone != null){
+              final evacuationZoneScore = state.totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == evacuationZone.number);
+              if (evacuationZoneScore != null) {
+                widgets.add(const Text("Evacuation Zone"));
+                widgets.add(Text("Total LOP: ${evacuationZoneScore.totalLOP}", textAlign: TextAlign.center,));
+                widgets.add(Text("Living Victims Collected: ${evacuationZoneScore.livingVictimsCollected} / ${evacuationZone.livingVictims}", textAlign: TextAlign.center,));
+                widgets.add(Text("Dead Victims Collected: ${evacuationZoneScore.deadVictimsCollected} / ${evacuationZone.deadVictims}", textAlign: TextAlign.center,));
+                widgets.add(const Divider());
+              }
+            }
+            
+            final (maxScore, achievedScore) = getMaxAndTotalScore(state.totalScore, state.map);
+
+            widgets.add(Text("Total Score: $achievedScore", textAlign: TextAlign.center,));
+            widgets.add(Text("Max Score: $maxScore", textAlign: TextAlign.center,));
+            widgets.add(const Divider());
 
             return SingleChildScrollView(
               child: Column(
@@ -176,12 +229,12 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
                   ElevatedButton(
                     onPressed: (){
                       context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringExit());
-                      context.go("/line-tracking/teams");
+                      context.go("/line-tracking/$category/teams");
                     },
                     child: const Text("Done"),
                   ),
                   const Divider(),
-                  for (var i in widgets) i,
+                  for (var i in widgets) Padding(padding: const EdgeInsets.all(8.0), child: i),
                 ]
               ),
             );
@@ -206,7 +259,7 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               child: ElevatedButton(
                 child: const Text("Retry"),
                 onPressed: (){
-                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID));
+                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringLoad(mapID: mapID, teamID: teamID, category: category));
                 },
               )
             );
@@ -366,7 +419,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
               child: Text("total LOP: $totalLOP",),
             )
         ),
-        for (var i in widget.checkPoints) Expanded(
+        for (var i in widget.checkPoints) i.tiles > 0 ? Expanded(
           flex: 3,
           child: ListTile(
             title: Center(
@@ -395,6 +448,32 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
               });
             },
           ),
+        ) : const SizedBox.shrink(),
+        Builder(
+          builder: (context){
+            final evacuationZone = widget.checkPoints.firstWhereOrNull((element) => element.tiles == 0);
+            if (evacuationZone == null) {
+              return const SizedBox.shrink();
+            }
+            return Expanded(
+              flex: 3,
+              child: ListTile(
+                title: Center(
+                    child: Text(
+                        "Evacuation Zone",
+                        style: Theme.of(context).textTheme.headlineSmall
+                    )
+                ),
+                onTap: (){
+                  setState(() {
+                    checkPointScoringIndex = widget.checkPoints.indexOf(evacuationZone);
+                    print(checkPointScoringIndex);
+                    print("-------------------");
+                  });
+                },
+              ),
+            );
+          },
         ),
         const Expanded(flex: 1, child: SizedBox.shrink())
       ],
@@ -412,6 +491,8 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
         int rampsPassed = 0;
         int speedBumpsPassed = 0;
         int seesawsPassed = 0;
+        int livingVictimsCollected = 0;
+        int deadVictimsCollected = 0;
         int totalLOP = 0;
 
         // get actual score passed
@@ -423,6 +504,8 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
           rampsPassed = checkPointScore.rampsPassed;
           speedBumpsPassed = checkPointScore.speedBumpsPassed;
           seesawsPassed = checkPointScore.seesawsPassed;
+          livingVictimsCollected = checkPointScore.livingVictimsCollected;
+          deadVictimsCollected = checkPointScore.deadVictimsCollected;
           totalLOP = checkPointScore.totalLOP;
         }
 
@@ -434,6 +517,8 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
         final rampCounter = widget.checkPoints[checkPointScoringIndex!].ramps! > 0 ? IntValue(value: rampsPassed) : null;
         final speedBumpCounter = widget.checkPoints[checkPointScoringIndex!].speedBumps > 0 ? IntValue(value: speedBumpsPassed) : null;
         final seesawCounter = widget.checkPoints[checkPointScoringIndex!].seesaws! > 0 ? IntValue(value: seesawsPassed) : null;
+        final livingVictimsCounter = widget.checkPoints[checkPointScoringIndex!].livingVictims! > 0 ? IntValue(value: livingVictimsCollected) : null;
+        final deadVictimsCounter = widget.checkPoints[checkPointScoringIndex!].deadVictims! > 0 ? IntValue(value: deadVictimsCollected) : null;
         final lopCounter = IntValue(value: totalLOP);
         final checkPointBool = BoolValue(value: tilesPassed > 0);
 
@@ -448,6 +533,8 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
               rampsPassed: rampCounter != null ? rampCounter.value : 0,
               speedBumpsPassed: speedBumpCounter != null ? speedBumpCounter.value : 0,
               seesawsPassed: seesawCounter != null ? seesawCounter.value : 0,
+              livingVictimsCollected: livingVictimsCounter != null ? livingVictimsCounter.value : 0,
+              deadVictimsCollected: deadVictimsCounter != null ? deadVictimsCounter.value : 0,
               totalLOP: lopCounter.value,
             )
           ));
@@ -460,10 +547,12 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
         final rampCounterWidget = rampCounter != null ? HorizontalCounter(name: "Ramps", maxVal: widget.checkPoints[checkPointScoringIndex!].ramps!, controller: rampCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
         final speedBumpCounterWidget = speedBumpCounter != null ? HorizontalCounter(name: "Speed Bumps", maxVal: widget.checkPoints[checkPointScoringIndex!].speedBumps, controller: speedBumpCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
         final seesawCounterWidget = seesawCounter != null ? HorizontalCounter(name: "Seesaws", maxVal: widget.checkPoints[checkPointScoringIndex!].seesaws!, controller: seesawCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final livingVictimsCounterWidget = livingVictimsCounter != null ? HorizontalCounter(name: "Living Victims", maxVal: widget.checkPoints[checkPointScoringIndex!].livingVictims!, controller: livingVictimsCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
+        final deadVictimsCounterWidget = deadVictimsCounter != null ? HorizontalCounter(name: "Dead Victims", maxVal: widget.checkPoints[checkPointScoringIndex!].deadVictims!, controller: deadVictimsCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,) : null;
         final lopCounterWidget = HorizontalCounter(name: "LOP", maxVal: -1, controller: lopCounter, checkPointNumber: checkPointNumber, onChanged: onChanged,);
 
         // final controllers = [gapCounter, obstacleCounter, intersectionCounter, rampCounter, speedBumpCounter, seesawCounter];
-        final widgets = [gapCounterWidget, obstacleCounterWidget, intersectionCounterWidget, rampCounterWidget, speedBumpCounterWidget, seesawCounterWidget, lopCounterWidget];
+        final widgets = [gapCounterWidget, obstacleCounterWidget, intersectionCounterWidget, rampCounterWidget, speedBumpCounterWidget, seesawCounterWidget, livingVictimsCounterWidget, deadVictimsCounterWidget, lopCounterWidget];
 
         return Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -480,7 +569,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
                           child: i,
                         ),
                       ) : const SizedBox.shrink(),
-                      HorizontalCheckBox(controller: checkPointBool, onChanged: onChanged,),
+                      widget.checkPoints[checkPointScoringIndex!].tiles > 0 ? HorizontalCheckBox(controller: checkPointBool, onChanged: onChanged,) : const SizedBox.shrink(),
                       SizedBox(
                         height: constraints.maxHeight * 0.1,
                       )

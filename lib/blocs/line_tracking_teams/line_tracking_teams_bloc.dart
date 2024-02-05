@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-
+import 'package:robocup/models/Category.dart';
 import '../../models/LineTrackingTeam.dart';
 import '../../repositories/line_tracking_repository.dart';
 
@@ -26,10 +26,11 @@ class LineTrackingTeamsBloc extends Bloc<LineTrackingTeamsEvent, LineTrackingTea
     // emit(LineTrackingTeamsReady(lineTrackingTeams: lineTrackingRepository.lineTrackingTeams));
 
     emit(LineTrackingTeamsLoading());
-    final lineTrackingTeams = await lineTrackingRepository.getLineTrackingTeams();
+    final lineTrackingTeams = await lineTrackingRepository.getLineTrackingTeams(event.category);
 
     if (lineTrackingTeams != null) {
-      emit(LineTrackingTeamsReady(lineTrackingTeams: lineTrackingTeams));
+      Category category = event.category == "primary" ? Category.PRIMARY : Category.OPEN;
+      emit(LineTrackingTeamsReady(lineTrackingTeams: lineTrackingTeams.where((element) => element.category == category).toList(), category: event.category));
     } else {
       emit(LineTrackingTeamsError());
     }

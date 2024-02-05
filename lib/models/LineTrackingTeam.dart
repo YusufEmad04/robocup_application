@@ -31,6 +31,7 @@ class LineTrackingTeam extends amplify_core.Model {
   final String? _name;
   final List<LineTrackingRound>? _lineTrackingRounds;
   final String? _robocupID;
+  final Category? _category;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
 
@@ -68,6 +69,19 @@ class LineTrackingTeam extends amplify_core.Model {
     return _robocupID;
   }
   
+  Category get category {
+    try {
+      return _category!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -76,14 +90,15 @@ class LineTrackingTeam extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const LineTrackingTeam._internal({required this.id, required name, lineTrackingRounds, robocupID, createdAt, updatedAt}): _name = name, _lineTrackingRounds = lineTrackingRounds, _robocupID = robocupID, _createdAt = createdAt, _updatedAt = updatedAt;
+  const LineTrackingTeam._internal({required this.id, required name, lineTrackingRounds, robocupID, required category, createdAt, updatedAt}): _name = name, _lineTrackingRounds = lineTrackingRounds, _robocupID = robocupID, _category = category, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory LineTrackingTeam({String? id, required String name, List<LineTrackingRound>? lineTrackingRounds, String? robocupID}) {
+  factory LineTrackingTeam({String? id, required String name, List<LineTrackingRound>? lineTrackingRounds, String? robocupID, required Category category}) {
     return LineTrackingTeam._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       name: name,
       lineTrackingRounds: lineTrackingRounds != null ? List<LineTrackingRound>.unmodifiable(lineTrackingRounds) : lineTrackingRounds,
-      robocupID: robocupID);
+      robocupID: robocupID,
+      category: category);
   }
   
   bool equals(Object other) {
@@ -97,7 +112,8 @@ class LineTrackingTeam extends amplify_core.Model {
       id == other.id &&
       _name == other._name &&
       DeepCollectionEquality().equals(_lineTrackingRounds, other._lineTrackingRounds) &&
-      _robocupID == other._robocupID;
+      _robocupID == other._robocupID &&
+      _category == other._category;
   }
   
   @override
@@ -111,6 +127,7 @@ class LineTrackingTeam extends amplify_core.Model {
     buffer.write("id=" + "$id" + ", ");
     buffer.write("name=" + "$_name" + ", ");
     buffer.write("robocupID=" + "$_robocupID" + ", ");
+    buffer.write("category=" + (_category != null ? amplify_core.enumToString(_category)! : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -118,24 +135,27 @@ class LineTrackingTeam extends amplify_core.Model {
     return buffer.toString();
   }
   
-  LineTrackingTeam copyWith({String? name, List<LineTrackingRound>? lineTrackingRounds, String? robocupID}) {
+  LineTrackingTeam copyWith({String? name, List<LineTrackingRound>? lineTrackingRounds, String? robocupID, Category? category}) {
     return LineTrackingTeam._internal(
       id: id,
       name: name ?? this.name,
       lineTrackingRounds: lineTrackingRounds ?? this.lineTrackingRounds,
-      robocupID: robocupID ?? this.robocupID);
+      robocupID: robocupID ?? this.robocupID,
+      category: category ?? this.category);
   }
   
   LineTrackingTeam copyWithModelFieldValues({
     ModelFieldValue<String>? name,
     ModelFieldValue<List<LineTrackingRound>?>? lineTrackingRounds,
-    ModelFieldValue<String?>? robocupID
+    ModelFieldValue<String?>? robocupID,
+    ModelFieldValue<Category>? category
   }) {
     return LineTrackingTeam._internal(
       id: id,
       name: name == null ? this.name : name.value,
       lineTrackingRounds: lineTrackingRounds == null ? this.lineTrackingRounds : lineTrackingRounds.value,
-      robocupID: robocupID == null ? this.robocupID : robocupID.value
+      robocupID: robocupID == null ? this.robocupID : robocupID.value,
+      category: category == null ? this.category : category.value
     );
   }
   
@@ -149,11 +169,12 @@ class LineTrackingTeam extends amplify_core.Model {
           .toList()
         : null,
       _robocupID = json['robocupID'],
+      _category = amplify_core.enumFromString<Category>(json['category'], Category.values),
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'name': _name, 'lineTrackingRounds': _lineTrackingRounds?.map((LineTrackingRound? e) => e?.toJson()).toList(), 'robocupID': _robocupID, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'name': _name, 'lineTrackingRounds': _lineTrackingRounds?.map((LineTrackingRound? e) => e?.toJson()).toList(), 'robocupID': _robocupID, 'category': amplify_core.enumToString(_category), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -161,6 +182,7 @@ class LineTrackingTeam extends amplify_core.Model {
     'name': _name,
     'lineTrackingRounds': _lineTrackingRounds,
     'robocupID': _robocupID,
+    'category': _category,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
@@ -172,6 +194,7 @@ class LineTrackingTeam extends amplify_core.Model {
     fieldName: "lineTrackingRounds",
     fieldType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.model, ofModelName: 'LineTrackingRound'));
   static final ROBOCUPID = amplify_core.QueryField(fieldName: "robocupID");
+  static final CATEGORY = amplify_core.QueryField(fieldName: "category");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "LineTrackingTeam";
     modelSchemaDefinition.pluralName = "LineTrackingTeams";
@@ -206,6 +229,12 @@ class LineTrackingTeam extends amplify_core.Model {
       key: LineTrackingTeam.ROBOCUPID,
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.string)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: LineTrackingTeam.CATEGORY,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.enumeration)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.nonQueryField(

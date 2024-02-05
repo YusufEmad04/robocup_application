@@ -44,12 +44,14 @@ class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
   final LineTrackingTeam team;
   final TotalScore totalScore;
   final LineTrackingMap map;
+  final String category;
   final TimerState timerState;
 
   const LineTrackingTeamScoringReady({
     required this.team,
     required this.totalScore,
     required this.map,
+    required this.category,
     required this.timerState,
   });
 
@@ -57,6 +59,7 @@ class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
     LineTrackingTeam? team,
     TotalScore? totalScore,
     LineTrackingMap? map,
+    String? category,
     TimerState? timerState,
   }) {
 
@@ -64,23 +67,25 @@ class LineTrackingTeamScoringReady extends LineTrackingTeamScoringState {
       team: team ?? this.team,
       totalScore: totalScore ?? this.totalScore,
       map: map ?? this.map,
+      category: category ?? this.category,
       timerState: timerState ?? this.timerState,
     );
   }
 
   @override
-  List<Object> get props => [team, totalScore, map, timerState];
+  List<Object> get props => [team, totalScore, map, category, timerState];
 }
 
 class LineTrackingTeamRoundEnd extends LineTrackingTeamScoringState {
   final TotalScore totalScore;
   final LineTrackingTeam team;
   final LineTrackingMap map;
+  final String category;
 
-  const LineTrackingTeamRoundEnd({required this.totalScore, required this.team, required this.map});
+  const LineTrackingTeamRoundEnd({required this.totalScore, required this.team, required this.map, required this.category});
 
   @override
-  List<Object> get props => [totalScore, team, map];
+  List<Object> get props => [totalScore, team, map, category];
 }
 
 class LineTrackingTeamScoringError extends LineTrackingTeamScoringState {

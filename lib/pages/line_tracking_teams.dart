@@ -6,7 +6,8 @@ import 'package:robocup/models/LineTrackingTeam.dart';
 import '../blocs/line_tracking_teams/line_tracking_teams_bloc.dart';
 
 class LineTrackingTeamsPage extends StatelessWidget {
-  const LineTrackingTeamsPage({super.key});
+  final String category;
+  const LineTrackingTeamsPage({required this.category, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,15 @@ class LineTrackingTeamsPage extends StatelessWidget {
               child: CircularProgressIndicator(),
             );
           } else if (state is LineTrackingTeamsReady){
-            return LineTrackingTeamsItems(lineTrackingTeams: state.lineTrackingTeams);
+            if (state.category != category){
+              context.read<LineTrackingTeamsBloc>().add(LineTrackingTeamsLoad(category: category));
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            return LineTrackingTeamsItems(lineTrackingTeams: state.lineTrackingTeams, category: category);
           } else if(state is LineTrackingTeamsInitial){
-            context.read<LineTrackingTeamsBloc>().add(const LineTrackingTeamsLoad());
+            context.read<LineTrackingTeamsBloc>().add(LineTrackingTeamsLoad(category: category));
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -40,8 +47,9 @@ class LineTrackingTeamsPage extends StatelessWidget {
 }
 
 class LineTrackingTeamsItems extends StatelessWidget {
+  final String category;
   final List<LineTrackingTeam> lineTrackingTeams;
-  const LineTrackingTeamsItems({required this.lineTrackingTeams, super.key});
+  const LineTrackingTeamsItems({required this.category, required this.lineTrackingTeams, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +65,8 @@ class LineTrackingTeamsItems extends StatelessWidget {
           title: Text("Team: ${lineTrackingTeams[index].name}"),
           subtitle: Text("ID: ${lineTrackingTeams[index].robocupID}"),
           onTap: (){
-            context.go("/line-tracking/teams/rounds/${lineTrackingTeams[index].id}");
+            // context.go("/line-tracking/teams/rounds/${lineTrackingTeams[index].id}");
+            context.go("/line-tracking/$category/teams/rounds/${lineTrackingTeams[index].id}");
           },
         );
       },

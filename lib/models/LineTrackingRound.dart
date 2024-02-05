@@ -33,6 +33,7 @@ class LineTrackingRound extends amplify_core.Model {
   final int? _score;
   final bool? _hidden;
   final TotalScore? _scoreDetails;
+  final Category? _category;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
   final String? _lineTrackingRoundLineTrackingMapId;
@@ -101,6 +102,19 @@ class LineTrackingRound extends amplify_core.Model {
     return _scoreDetails;
   }
   
+  Category get category {
+    try {
+      return _category!;
+    } catch(e) {
+      throw amplify_core.AmplifyCodeGenModelException(
+          amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastExceptionMessage,
+          recoverySuggestion:
+            amplify_core.AmplifyExceptionMessages.codeGenRequiredFieldForceCastRecoverySuggestion,
+          underlyingException: e.toString()
+          );
+    }
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -122,9 +136,9 @@ class LineTrackingRound extends amplify_core.Model {
     }
   }
   
-  const LineTrackingRound._internal({required this.id, required number, required linetrackingteamID, required lineTrackingMap, score, hidden, scoreDetails, createdAt, updatedAt, required lineTrackingRoundLineTrackingMapId}): _number = number, _linetrackingteamID = linetrackingteamID, _lineTrackingMap = lineTrackingMap, _score = score, _hidden = hidden, _scoreDetails = scoreDetails, _createdAt = createdAt, _updatedAt = updatedAt, _lineTrackingRoundLineTrackingMapId = lineTrackingRoundLineTrackingMapId;
+  const LineTrackingRound._internal({required this.id, required number, required linetrackingteamID, required lineTrackingMap, score, hidden, scoreDetails, required category, createdAt, updatedAt, required lineTrackingRoundLineTrackingMapId}): _number = number, _linetrackingteamID = linetrackingteamID, _lineTrackingMap = lineTrackingMap, _score = score, _hidden = hidden, _scoreDetails = scoreDetails, _category = category, _createdAt = createdAt, _updatedAt = updatedAt, _lineTrackingRoundLineTrackingMapId = lineTrackingRoundLineTrackingMapId;
   
-  factory LineTrackingRound({String? id, required int number, required String linetrackingteamID, required LineTrackingMap lineTrackingMap, int? score, bool? hidden, TotalScore? scoreDetails, required String lineTrackingRoundLineTrackingMapId}) {
+  factory LineTrackingRound({String? id, required int number, required String linetrackingteamID, required LineTrackingMap lineTrackingMap, int? score, bool? hidden, TotalScore? scoreDetails, required Category category, required String lineTrackingRoundLineTrackingMapId}) {
     return LineTrackingRound._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       number: number,
@@ -133,6 +147,7 @@ class LineTrackingRound extends amplify_core.Model {
       score: score,
       hidden: hidden,
       scoreDetails: scoreDetails,
+      category: category,
       lineTrackingRoundLineTrackingMapId: lineTrackingRoundLineTrackingMapId);
   }
   
@@ -151,6 +166,7 @@ class LineTrackingRound extends amplify_core.Model {
       _score == other._score &&
       _hidden == other._hidden &&
       _scoreDetails == other._scoreDetails &&
+      _category == other._category &&
       _lineTrackingRoundLineTrackingMapId == other._lineTrackingRoundLineTrackingMapId;
   }
   
@@ -168,6 +184,7 @@ class LineTrackingRound extends amplify_core.Model {
     buffer.write("score=" + (_score != null ? _score!.toString() : "null") + ", ");
     buffer.write("hidden=" + (_hidden != null ? _hidden!.toString() : "null") + ", ");
     buffer.write("scoreDetails=" + (_scoreDetails != null ? _scoreDetails!.toString() : "null") + ", ");
+    buffer.write("category=" + (_category != null ? amplify_core.enumToString(_category)! : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null") + ", ");
     buffer.write("lineTrackingRoundLineTrackingMapId=" + "$_lineTrackingRoundLineTrackingMapId");
@@ -176,7 +193,7 @@ class LineTrackingRound extends amplify_core.Model {
     return buffer.toString();
   }
   
-  LineTrackingRound copyWith({int? number, String? linetrackingteamID, LineTrackingMap? lineTrackingMap, int? score, bool? hidden, TotalScore? scoreDetails, String? lineTrackingRoundLineTrackingMapId}) {
+  LineTrackingRound copyWith({int? number, String? linetrackingteamID, LineTrackingMap? lineTrackingMap, int? score, bool? hidden, TotalScore? scoreDetails, Category? category, String? lineTrackingRoundLineTrackingMapId}) {
     return LineTrackingRound._internal(
       id: id,
       number: number ?? this.number,
@@ -185,6 +202,7 @@ class LineTrackingRound extends amplify_core.Model {
       score: score ?? this.score,
       hidden: hidden ?? this.hidden,
       scoreDetails: scoreDetails ?? this.scoreDetails,
+      category: category ?? this.category,
       lineTrackingRoundLineTrackingMapId: lineTrackingRoundLineTrackingMapId ?? this.lineTrackingRoundLineTrackingMapId);
   }
   
@@ -195,6 +213,7 @@ class LineTrackingRound extends amplify_core.Model {
     ModelFieldValue<int?>? score,
     ModelFieldValue<bool?>? hidden,
     ModelFieldValue<TotalScore?>? scoreDetails,
+    ModelFieldValue<Category>? category,
     ModelFieldValue<String>? lineTrackingRoundLineTrackingMapId
   }) {
     return LineTrackingRound._internal(
@@ -205,6 +224,7 @@ class LineTrackingRound extends amplify_core.Model {
       score: score == null ? this.score : score.value,
       hidden: hidden == null ? this.hidden : hidden.value,
       scoreDetails: scoreDetails == null ? this.scoreDetails : scoreDetails.value,
+      category: category == null ? this.category : category.value,
       lineTrackingRoundLineTrackingMapId: lineTrackingRoundLineTrackingMapId == null ? this.lineTrackingRoundLineTrackingMapId : lineTrackingRoundLineTrackingMapId.value
     );
   }
@@ -221,12 +241,13 @@ class LineTrackingRound extends amplify_core.Model {
       _scoreDetails = json['scoreDetails']?['serializedData'] != null
         ? TotalScore.fromJson(new Map<String, dynamic>.from(json['scoreDetails']['serializedData']))
         : null,
+      _category = amplify_core.enumFromString<Category>(json['category'], Category.values),
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null,
       _lineTrackingRoundLineTrackingMapId = json['lineTrackingRoundLineTrackingMapId'];
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'number': _number, 'linetrackingteamID': _linetrackingteamID, 'lineTrackingMap': _lineTrackingMap?.toJson(), 'score': _score, 'hidden': _hidden, 'scoreDetails': _scoreDetails?.toJson(), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format(), 'lineTrackingRoundLineTrackingMapId': _lineTrackingRoundLineTrackingMapId
+    'id': id, 'number': _number, 'linetrackingteamID': _linetrackingteamID, 'lineTrackingMap': _lineTrackingMap?.toJson(), 'score': _score, 'hidden': _hidden, 'scoreDetails': _scoreDetails?.toJson(), 'category': amplify_core.enumToString(_category), 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format(), 'lineTrackingRoundLineTrackingMapId': _lineTrackingRoundLineTrackingMapId
   };
   
   Map<String, Object?> toMap() => {
@@ -237,6 +258,7 @@ class LineTrackingRound extends amplify_core.Model {
     'score': _score,
     'hidden': _hidden,
     'scoreDetails': _scoreDetails,
+    'category': _category,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt,
     'lineTrackingRoundLineTrackingMapId': _lineTrackingRoundLineTrackingMapId
@@ -252,6 +274,7 @@ class LineTrackingRound extends amplify_core.Model {
   static final SCORE = amplify_core.QueryField(fieldName: "score");
   static final HIDDEN = amplify_core.QueryField(fieldName: "hidden");
   static final SCOREDETAILS = amplify_core.QueryField(fieldName: "scoreDetails");
+  static final CATEGORY = amplify_core.QueryField(fieldName: "category");
   static final LINETRACKINGROUNDLINETRACKINGMAPID = amplify_core.QueryField(fieldName: "lineTrackingRoundLineTrackingMapId");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "LineTrackingRound";
@@ -309,6 +332,12 @@ class LineTrackingRound extends amplify_core.Model {
       fieldName: 'scoreDetails',
       isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.embedded, ofCustomTypeName: 'TotalScore')
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: LineTrackingRound.CATEGORY,
+      isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.enumeration)
     ));
     
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.nonQueryField(

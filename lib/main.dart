@@ -5,10 +5,13 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:robocup/blocs/line_tracking_team_rounds/line_tracking_team_rounds_bloc.dart';
 import 'package:robocup/blocs/line_tracking_teams/line_tracking_teams_bloc.dart';
 import 'package:robocup/dialogs/choose-map.dart';
 import 'package:robocup/dialogs/dialog.dart';
+import 'package:robocup/pages/line_tracking_choose_category.dart';
 import 'package:robocup/pages/line_tracking_dashboard.dart';
+import 'package:robocup/pages/line_tracking_team_round_details.dart';
 import 'package:robocup/pages/line_tracking_team_round_scoring.dart';
 import 'package:robocup/pages/line_tracking_team_rounds.dart';
 import 'package:robocup/pages/line_tracking_teams.dart';
@@ -38,49 +41,59 @@ class _MyAppState extends State<MyApp> {
     routes: [
       GoRoute(
         path: '/line-tracking',
-        builder: (context, state) => const LineTrackingDashBoard(),
+        builder: (context, state) => const LineTrackingChooseCategory(),
         routes: [
           GoRoute(
-            path: 'teams',
-            builder: (context, state) => const LineTrackingTeamsPage(),
-            routes: [
-              GoRoute(
-                path: 'rounds/:teamID',
-                builder: (context, state) => LineTrackingTeamRoundsPage(teamID: state.pathParameters['teamID']!),
-                routes: [
-                  GoRoute(
-                    path: 'choose-map',
-                    pageBuilder: (context, state) => DialogPage(child: ChooseMapDialog(teamID: state.pathParameters['teamID']!,)),
-                  ),
-                  GoRoute(
-                    // confirmation dialog on exit
-                    onExit: (context) async{
-                      // show a dialog to confirm exit
-                      final result = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Are you sure you want to exit?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Yes'),
+            path: ':category',
+            builder: (context, state) => LineTrackingDashBoard(category: state.pathParameters['category']!),
+              routes: [
+                GoRoute(
+                    path: 'teams',
+                    builder: (context, state) => LineTrackingTeamsPage(category: state.pathParameters['category']!),
+                    routes: [
+                      GoRoute(
+                          path: 'rounds/:teamID',
+                          builder: (context, state) => LineTrackingTeamRoundsPage(teamID: state.pathParameters['teamID']!, category: state.pathParameters['category']!),
+                          routes: [
+                            GoRoute(
+                              path: 'choose-map',
+                              pageBuilder: (context, state) => DialogPage(child: ChooseMapDialog(teamID: state.pathParameters['teamID']!, category: state.pathParameters['category']!)),
                             ),
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('No'),
+                            GoRoute(
+                              path: 'round-details/:roundID',
+                              builder: (context, state) => LineTrackingTeamRoundDetails(teamID: state.pathParameters['teamID']!, roundID: state.pathParameters['roundID']!, category: state.pathParameters['category']!),
                             ),
-                          ],
-                        ),
-                      );
-                      return result ?? false;
-                    },
-                    path: 'round-scoring/:mapID',
-                    builder: (context, state) => LineTrackingTeamRoundScoring(teamID: state.pathParameters['teamID']!, mapID: state.pathParameters['mapID']!),
-                  ),
-                ]
-              )
-            ]
-          ),
+                            GoRoute(
+                              // confirmation dialog on exit
+                              onExit: (context) async{
+                                // show a dialog to confirm exit
+                                final result = await showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: Text('Are you sure you want to exit?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(true),
+                                        child: const Text('Yes'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.of(context).pop(false),
+                                        child: const Text('No'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return result ?? false;
+                              },
+                              path: 'round-scoring/:mapID',
+                              builder: (context, state) => LineTrackingTeamRoundScoring(teamID: state.pathParameters['teamID']!, mapID: state.pathParameters['mapID']!, category: state.pathParameters['category']!),
+                            ),
+                          ]
+                      )
+                    ]
+                ),
+              ]
+          )
         ]
       )
     ]
@@ -124,13 +137,15 @@ class _MyAppState extends State<MyApp> {
             return MultiBlocProvider(
               providers: [
                 BlocProvider(create: (_) => LineTrackingTeamsBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
-                BlocProvider(create: (_) => LineTrackingTeamScoringBloc(lineTrackingRepository: context.read<LineTrackingRepository>()))
+                BlocProvider(create: (_) => LineTrackingTeamScoringBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
+                BlocProvider(create: (_) => LineTrackingTeamRoundsBloc(lineTrackingRepository: context.read<LineTrackingRepository>()))
               ],
               child: MaterialApp.router(
                 builder: Authenticator.builder(),
                 title: 'Flutter Demo',
+                // theme colors will be: dark blue (primary) yellow (secondary) and white (background) with their shades,
                 theme: ThemeData(
-                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+                  colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
                   useMaterial3: true,
                 ),
                 routerConfig: router,

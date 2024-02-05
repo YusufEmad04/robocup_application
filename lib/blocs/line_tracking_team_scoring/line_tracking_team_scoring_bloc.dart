@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:robocup/models/Category.dart';
 import 'package:robocup/models/CheckPointScore.dart';
 import 'package:robocup/models/LineTrackingMap.dart';
 
@@ -35,6 +36,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
   LineTrackingTeam? team;
   LineTrackingMap? map;
+  String? category;
 
   LineTrackingTeamScoringBloc({required this.lineTrackingRepository}) : super(LineTrackingTeamScoringInitial()) {
     on<LineTrackingTeamScoringLoad>(_onLineTrackingTeamScoringLoad);
@@ -52,6 +54,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
     team = await lineTrackingRepository.getLineTrackingTeam(event.teamID);
     map = await lineTrackingRepository.getLineTrackingMap(event.mapID);
+    category = event.category;
 
     _tickerSubscription?.cancel();
     totalScore = totalScore.copyWith(checkPointsScores: []);
@@ -59,10 +62,11 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
     if (team != null && map != null) {
       emit(
           LineTrackingTeamScoringReady(
-          team: team!,
-          totalScore: totalScore,
-          map: map!,
-          timerState: const TimerInitial(duration)
+            team: team!,
+            totalScore: totalScore,
+            map: map!,
+            timerState: const TimerInitial(duration),
+            category: event.category,
           )
       );
     } else {
@@ -152,12 +156,13 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         lineTrackingMap: map!,
         number: roundNumber,
         lineTrackingRoundLineTrackingMapId: map!.id,
+        category: category! == "primary" ? Category.PRIMARY : Category.OPEN,
       );
 
 
       final result = await lineTrackingRepository.createLineTrackingRound(round);
       if (result != null) {
-        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!));
+        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!));
       } else {
         //TODO save the data locally so that it is not lost
         emit(LineTrackingTeamRoundEndError());

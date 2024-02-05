@@ -36,6 +36,8 @@ class CheckPoint extends amplify_core.Model {
   final int? _speedBumps;
   final int? _seesaws;
   final int? _number;
+  final int? _livingVictims;
+  final int? _deadVictims;
   final amplify_core.TemporalDateTime? _createdAt;
   final amplify_core.TemporalDateTime? _updatedAt;
 
@@ -124,6 +126,14 @@ class CheckPoint extends amplify_core.Model {
     }
   }
   
+  int? get livingVictims {
+    return _livingVictims;
+  }
+  
+  int? get deadVictims {
+    return _deadVictims;
+  }
+  
   amplify_core.TemporalDateTime? get createdAt {
     return _createdAt;
   }
@@ -132,9 +142,9 @@ class CheckPoint extends amplify_core.Model {
     return _updatedAt;
   }
   
-  const CheckPoint._internal({required this.id, required linetrackingmapID, required tiles, gaps, obstacles, intersections, ramps, required speedBumps, seesaws, required number, createdAt, updatedAt}): _linetrackingmapID = linetrackingmapID, _tiles = tiles, _gaps = gaps, _obstacles = obstacles, _intersections = intersections, _ramps = ramps, _speedBumps = speedBumps, _seesaws = seesaws, _number = number, _createdAt = createdAt, _updatedAt = updatedAt;
+  const CheckPoint._internal({required this.id, required linetrackingmapID, required tiles, gaps, obstacles, intersections, ramps, required speedBumps, seesaws, required number, livingVictims, deadVictims, createdAt, updatedAt}): _linetrackingmapID = linetrackingmapID, _tiles = tiles, _gaps = gaps, _obstacles = obstacles, _intersections = intersections, _ramps = ramps, _speedBumps = speedBumps, _seesaws = seesaws, _number = number, _livingVictims = livingVictims, _deadVictims = deadVictims, _createdAt = createdAt, _updatedAt = updatedAt;
   
-  factory CheckPoint({String? id, required String linetrackingmapID, required int tiles, int? gaps, int? obstacles, int? intersections, int? ramps, required int speedBumps, int? seesaws, required int number}) {
+  factory CheckPoint({String? id, required String linetrackingmapID, required int tiles, int? gaps, int? obstacles, int? intersections, int? ramps, required int speedBumps, int? seesaws, required int number, int? livingVictims, int? deadVictims}) {
     return CheckPoint._internal(
       id: id == null ? amplify_core.UUID.getUUID() : id,
       linetrackingmapID: linetrackingmapID,
@@ -145,7 +155,9 @@ class CheckPoint extends amplify_core.Model {
       ramps: ramps,
       speedBumps: speedBumps,
       seesaws: seesaws,
-      number: number);
+      number: number,
+      livingVictims: livingVictims,
+      deadVictims: deadVictims);
   }
   
   bool equals(Object other) {
@@ -165,7 +177,9 @@ class CheckPoint extends amplify_core.Model {
       _ramps == other._ramps &&
       _speedBumps == other._speedBumps &&
       _seesaws == other._seesaws &&
-      _number == other._number;
+      _number == other._number &&
+      _livingVictims == other._livingVictims &&
+      _deadVictims == other._deadVictims;
   }
   
   @override
@@ -186,6 +200,8 @@ class CheckPoint extends amplify_core.Model {
     buffer.write("speedBumps=" + (_speedBumps != null ? _speedBumps!.toString() : "null") + ", ");
     buffer.write("seesaws=" + (_seesaws != null ? _seesaws!.toString() : "null") + ", ");
     buffer.write("number=" + (_number != null ? _number!.toString() : "null") + ", ");
+    buffer.write("livingVictims=" + (_livingVictims != null ? _livingVictims!.toString() : "null") + ", ");
+    buffer.write("deadVictims=" + (_deadVictims != null ? _deadVictims!.toString() : "null") + ", ");
     buffer.write("createdAt=" + (_createdAt != null ? _createdAt!.format() : "null") + ", ");
     buffer.write("updatedAt=" + (_updatedAt != null ? _updatedAt!.format() : "null"));
     buffer.write("}");
@@ -193,7 +209,7 @@ class CheckPoint extends amplify_core.Model {
     return buffer.toString();
   }
   
-  CheckPoint copyWith({String? linetrackingmapID, int? tiles, int? gaps, int? obstacles, int? intersections, int? ramps, int? speedBumps, int? seesaws, int? number}) {
+  CheckPoint copyWith({String? linetrackingmapID, int? tiles, int? gaps, int? obstacles, int? intersections, int? ramps, int? speedBumps, int? seesaws, int? number, int? livingVictims, int? deadVictims}) {
     return CheckPoint._internal(
       id: id,
       linetrackingmapID: linetrackingmapID ?? this.linetrackingmapID,
@@ -204,7 +220,9 @@ class CheckPoint extends amplify_core.Model {
       ramps: ramps ?? this.ramps,
       speedBumps: speedBumps ?? this.speedBumps,
       seesaws: seesaws ?? this.seesaws,
-      number: number ?? this.number);
+      number: number ?? this.number,
+      livingVictims: livingVictims ?? this.livingVictims,
+      deadVictims: deadVictims ?? this.deadVictims);
   }
   
   CheckPoint copyWithModelFieldValues({
@@ -216,7 +234,9 @@ class CheckPoint extends amplify_core.Model {
     ModelFieldValue<int?>? ramps,
     ModelFieldValue<int>? speedBumps,
     ModelFieldValue<int?>? seesaws,
-    ModelFieldValue<int>? number
+    ModelFieldValue<int>? number,
+    ModelFieldValue<int?>? livingVictims,
+    ModelFieldValue<int?>? deadVictims
   }) {
     return CheckPoint._internal(
       id: id,
@@ -228,7 +248,9 @@ class CheckPoint extends amplify_core.Model {
       ramps: ramps == null ? this.ramps : ramps.value,
       speedBumps: speedBumps == null ? this.speedBumps : speedBumps.value,
       seesaws: seesaws == null ? this.seesaws : seesaws.value,
-      number: number == null ? this.number : number.value
+      number: number == null ? this.number : number.value,
+      livingVictims: livingVictims == null ? this.livingVictims : livingVictims.value,
+      deadVictims: deadVictims == null ? this.deadVictims : deadVictims.value
     );
   }
   
@@ -243,11 +265,13 @@ class CheckPoint extends amplify_core.Model {
       _speedBumps = (json['speedBumps'] as num?)?.toInt(),
       _seesaws = (json['seesaws'] as num?)?.toInt(),
       _number = (json['number'] as num?)?.toInt(),
+      _livingVictims = (json['livingVictims'] as num?)?.toInt(),
+      _deadVictims = (json['deadVictims'] as num?)?.toInt(),
       _createdAt = json['createdAt'] != null ? amplify_core.TemporalDateTime.fromString(json['createdAt']) : null,
       _updatedAt = json['updatedAt'] != null ? amplify_core.TemporalDateTime.fromString(json['updatedAt']) : null;
   
   Map<String, dynamic> toJson() => {
-    'id': id, 'linetrackingmapID': _linetrackingmapID, 'tiles': _tiles, 'gaps': _gaps, 'obstacles': _obstacles, 'intersections': _intersections, 'ramps': _ramps, 'speedBumps': _speedBumps, 'seesaws': _seesaws, 'number': _number, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
+    'id': id, 'linetrackingmapID': _linetrackingmapID, 'tiles': _tiles, 'gaps': _gaps, 'obstacles': _obstacles, 'intersections': _intersections, 'ramps': _ramps, 'speedBumps': _speedBumps, 'seesaws': _seesaws, 'number': _number, 'livingVictims': _livingVictims, 'deadVictims': _deadVictims, 'createdAt': _createdAt?.format(), 'updatedAt': _updatedAt?.format()
   };
   
   Map<String, Object?> toMap() => {
@@ -261,6 +285,8 @@ class CheckPoint extends amplify_core.Model {
     'speedBumps': _speedBumps,
     'seesaws': _seesaws,
     'number': _number,
+    'livingVictims': _livingVictims,
+    'deadVictims': _deadVictims,
     'createdAt': _createdAt,
     'updatedAt': _updatedAt
   };
@@ -276,6 +302,8 @@ class CheckPoint extends amplify_core.Model {
   static final SPEEDBUMPS = amplify_core.QueryField(fieldName: "speedBumps");
   static final SEESAWS = amplify_core.QueryField(fieldName: "seesaws");
   static final NUMBER = amplify_core.QueryField(fieldName: "number");
+  static final LIVINGVICTIMS = amplify_core.QueryField(fieldName: "livingVictims");
+  static final DEADVICTIMS = amplify_core.QueryField(fieldName: "deadVictims");
   static var schema = amplify_core.Model.defineSchema(define: (amplify_core.ModelSchemaDefinition modelSchemaDefinition) {
     modelSchemaDefinition.name = "CheckPoint";
     modelSchemaDefinition.pluralName = "CheckPoints";
@@ -348,6 +376,18 @@ class CheckPoint extends amplify_core.Model {
     modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
       key: CheckPoint.NUMBER,
       isRequired: true,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: CheckPoint.LIVINGVICTIMS,
+      isRequired: false,
+      ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
+    ));
+    
+    modelSchemaDefinition.addField(amplify_core.ModelFieldDefinition.field(
+      key: CheckPoint.DEADVICTIMS,
+      isRequired: false,
       ofType: amplify_core.ModelFieldType(amplify_core.ModelFieldTypeEnum.int)
     ));
     

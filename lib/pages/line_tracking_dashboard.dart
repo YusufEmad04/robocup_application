@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class LineTrackingDashBoard extends StatelessWidget {
-  const LineTrackingDashBoard({super.key});
+  final String category;
+  const LineTrackingDashBoard({required this.category, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,8 @@ class LineTrackingDashBoard extends StatelessWidget {
             ElevatedButton(
               child: const Text("View Teams"),
               onPressed: (){
-                context.go("/line-tracking/teams");
+                // context.go("/line-tracking/teams");
+                context.go("/line-tracking/$category/teams");
               },
             ),
           ],
