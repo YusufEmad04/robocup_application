@@ -18,76 +18,100 @@ class LineTrackingTeamRoundsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<LineTrackingTeamRoundsBloc>().add(LineTrackingTeamRoundsRefresh(category: category, teamID: teamID));
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Rounds'),
-      ),
-      body: BlocBuilder<LineTrackingTeamRoundsBloc, LineTrackingTeamRoundsState>(
+    return BlocBuilder<LineTrackingTeamRoundsBloc, LineTrackingTeamRoundsState>(
         builder: (context, state) {
           if (state is LineTrackingTeamRoundsLoading){
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: const Text('Rounds'),
+              ),
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           } else if (state is LineTrackingTeamRoundsInitial){
             context.read<LineTrackingTeamRoundsBloc>().add(LineTrackingTeamRoundsLoad(category: category, teamID: teamID));
-            return const Center(
-              child: CircularProgressIndicator(),
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: const Text('Rounds'),
+              ),
+              body: const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           }  else if (state is LineTrackingTeamRoundsReady){
             if (state.category != category || state.teamId != teamID){
               context.read<LineTrackingTeamRoundsBloc>().add(LineTrackingTeamRoundsLoad(category: category, teamID: teamID));
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Scaffold(
+                appBar: AppBar(
+                  backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                  title: const Text('Rounds'),
+                ),
+                body: const Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
             }
-            return Center(
-              child: Column(
-                children: [
-                  Expanded(child: LineTrackingRounds(rounds: state.lineTrackingTeamRounds, teamID: teamID, category: category)),
-                  Container(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: ElevatedButton(
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: Text('${state.teamName} Rounds'),
+              ),
+              body: Center(
+                child: Column(
+                  children: [
+                    Expanded(child: LineTrackingRounds(rounds: state.lineTrackingTeamRounds, teamID: teamID, category: category)),
+                    Container(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(15.0),
+                            child: ElevatedButton(
+                              child: const Text("Add Round"),
+                              onPressed: (){
+                                // context.go("/line-tracking/teams/rounds/$teamID/choose-map");
+                                context.go("/line-tracking/$category/teams/rounds/$teamID/choose-map");
+                              },
+                            ),
+                          )
+                        ]
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                title: const Text('Rounds'),
+              ),
+              body: Center(
+                child: Column(
+                  children: [
+                    // Expanded(child: LineTrackingTeamRoundsItems(teamID: teamID)),
+                    Row(
+                        children: [
+                          ElevatedButton(
                             child: const Text("Add Round"),
                             onPressed: (){
                               // context.go("/line-tracking/teams/rounds/$teamID/choose-map");
                               context.go("/line-tracking/$category/teams/rounds/$teamID/choose-map");
                             },
-                          ),
-                        )
-                      ]
-                    ),
-                  )
-                ],
-              ),
-            );
-          } else {
-            return Center(
-              child: Column(
-                children: [
-                  // Expanded(child: LineTrackingTeamRoundsItems(teamID: teamID)),
-                  Row(
-                      children: [
-                        ElevatedButton(
-                          child: const Text("Add Round"),
-                          onPressed: (){
-                            // context.go("/line-tracking/teams/rounds/$teamID/choose-map");
-                            context.go("/line-tracking/$category/teams/rounds/$teamID/choose-map");
-                          },
-                        )
-                      ]
-                  )
-                ],
+                          )
+                        ]
+                    )
+                  ],
+                ),
               ),
             );
           }
         },
-      )
     );
   }
 }
@@ -128,6 +152,14 @@ class LineTrackingRounds extends StatelessWidget {
           onTap: (){
             context.go("/line-tracking/$category/teams/rounds/$teamID/round-details/${rounds[index].id}");
           },
+          onLongPress: (){
+            showDialogFunction(context, "Delete Round", "Are you sure you want to delete this round?", "Delete", "Cancel").then((value) {
+              if (value){
+                context.read<LineTrackingTeamRoundsBloc>().add(LineTrackingRoundsDeleteRound(category: category, teamID: teamID, round: rounds[index]));
+              }
+            });
+            // context.read<LineTrackingTeamRoundsBloc>().add(LineTrackingRoundsDeleteRound(category: category, teamID: teamID, round: rounds[index]));
+          }
         );
       },
     );

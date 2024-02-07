@@ -7,47 +7,6 @@ import 'package:robocup/models/CheckPointScore.dart';
 import '../blocs/line_tracking_team_scoring/line_tracking_team_scoring_bloc.dart';
 import '../models/CheckPoint.dart';
 
-
-Future<bool> _showDialog(context, String title, String text, String left, String right) async {
-
-  final result = await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(title),
-        content: Text(
-          text,
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: Text(left),
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: Text(right),
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-          ),
-        ],
-      );
-    },
-  );
-  if (result != null) {
-    return result;
-  } else {
-    return false;
-  }
-}
-
 class LineTrackingTeamRoundScoring extends StatelessWidget {
 
   final String mapID;
@@ -328,7 +287,7 @@ class Timer extends StatelessWidget {
                               onPressed: (){
                                 // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
                                 if (state.timerState is! TimerInitial){
-                                  _showDialog(context, "Reset Timer", "Are you sure you want to reset the timer?", "Yes", "No").then((value) {
+                                  showDialogFunction(context, "Reset Timer", "Are you sure you want to reset the timer?", "Yes", "No").then((value) {
                                     if (value) {
                                       context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringTimerReset());
                                     }
@@ -353,7 +312,7 @@ class Timer extends StatelessWidget {
                           onPressed: (){
                             // context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringEndRound());
                             if (state.timerState is! TimerInitial){
-                              _showDialog(context, "End Round", "Are you sure you want to end the round?", "Yes", "No").then((value) {
+                              showDialogFunction(context, "End Round", "Are you sure you want to end the round?", "Yes", "No").then((value) {
                                 if (value) {
                                   print("end round");
                                   context.read<LineTrackingTeamScoringBloc>().add(const LineTrackingTeamScoringRoundEnded(fromRetry: false));

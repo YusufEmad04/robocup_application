@@ -10,7 +10,7 @@ class LineTrackingDashBoard extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Line Tracking Judge Dashboard'),
+        title: Text('Line Tracking $category'),
       ),
       body: Center(
         child: Column(

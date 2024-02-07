@@ -13,17 +13,16 @@ class LineTrackingChooseCategory extends StatelessWidget {
       ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            ElevatedButton(
-              child: const Text("Primary"),
-              onPressed: (){
+            ListTile(
+              title: const Text("Primary"),
+              onTap: (){
                 context.go("/line-tracking/primary");
               },
             ),
-            ElevatedButton(
-              child: const Text("Open"),
-              onPressed: (){
+            ListTile(
+              title: const Text("Open"),
+              onTap: (){
                 context.go("/line-tracking/open");
               },
             )

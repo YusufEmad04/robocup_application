@@ -21,3 +21,13 @@ class LineTrackingTeamRoundsRefresh extends LineTrackingTeamRoundsEvent {
   @override
   List<Object> get props => [category, teamID];
 }
+
+class LineTrackingRoundsDeleteRound extends LineTrackingTeamRoundsEvent {
+  final String category;
+  final String teamID;
+  final LineTrackingRound round;
+  const LineTrackingRoundsDeleteRound({required this.category, required this.teamID, required this.round});
+
+  @override
+  List<Object> get props => [category, teamID, round];
+}

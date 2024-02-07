@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:robocup/models/ModelProvider.dart';
 import 'package:collection/collection.dart';
 
@@ -86,4 +87,44 @@ import 'package:collection/collection.dart';
 
   return (maxScore.roundToDouble(), achievedScore.roundToDouble());
 
+}
+
+Future<bool> showDialogFunction(context, String title, String text, String left, String right) async {
+
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(
+          text,
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: Text(left),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: Text(right),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+        ],
+      );
+    },
+  );
+  if (result != null) {
+    return result;
+  } else {
+    return false;
+  }
 }

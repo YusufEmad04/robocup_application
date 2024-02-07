@@ -406,6 +406,27 @@ class LineTrackingRepository {
 
   }
 
+  Future<bool> deleteRound(LineTrackingRound round) async {
+    try {
+      final request = ModelMutations.delete(round);
+      final response = await Amplify.API.mutate(request: request).response;
 
+      final deletedRound = response.data;
+
+      if (deletedRound != null) {
+        final newTeam = getLineTrackingTeam(deletedRound.linetrackingteamID, withRounds: true);
+        if (newTeam != null){
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+
+    } catch (e) {
+      return false;
+    }
+  }
 
 }

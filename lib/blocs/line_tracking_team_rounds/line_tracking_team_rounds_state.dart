@@ -23,12 +23,14 @@ class LineTrackingTeamRoundsReady extends LineTrackingTeamRoundsState {
   final List<LineTrackingRound> lineTrackingTeamRounds;
   final String category;
   final String teamId;
+  final String teamName;
 
   const LineTrackingTeamRoundsReady(
       {required this.lineTrackingTeamRounds,
       required this.category,
-      required this.teamId});
+      required this.teamId,
+      required this.teamName});
 
   @override
-  List<Object> get props => [lineTrackingTeamRounds, category, teamId];
+  List<Object> get props => [lineTrackingTeamRounds, category, teamId, teamName];
 }
