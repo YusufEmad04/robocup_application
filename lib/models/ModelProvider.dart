@@ -37,7 +37,7 @@ export 'TotalScore.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "8009e694e165d63b6007ee3abed2cf93";
+  String version = "241e3070351eac93c67be238bfdf834e";
   @override
   List<amplify_core.ModelSchema> modelSchemas = [CheckPoint.schema, LineTrackingMap.schema, LineTrackingRound.schema, LineTrackingTeam.schema];
   @override

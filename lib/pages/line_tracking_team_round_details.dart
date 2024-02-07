@@ -11,7 +11,7 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
   final String category;
   const LineTrackingTeamRoundDetails({required this.teamID, required this.roundID, required this.category, super.key});
 
-  Future<(TotalScore, LineTrackingMap)?> getRoundDetails(String teamID, String roundID, String category, LineTrackingRepository lineTrackingRepository) async {
+  Future<(TotalScore, LineTrackingMap, LineTrackingRound)?> getRoundDetails(String teamID, String roundID, String category, LineTrackingRepository lineTrackingRepository) async {
     LineTrackingTeam? team;
     LineTrackingRound? round;
     LineTrackingMap? map;
@@ -47,7 +47,7 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
       return null;
     }
 
-    return (round.scoreDetails!, map);
+    return (round.scoreDetails!, map, round);
 
   }
 
@@ -71,7 +71,7 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
             );
           } else if (snapshot.hasData){
 
-            final (totalScore, map) = snapshot.data as (TotalScore, LineTrackingMap);
+            final (totalScore, map, round) = snapshot.data as (TotalScore, LineTrackingMap, LineTrackingRound);
             final (max, total) = getMaxAndTotalScore(totalScore, map);
 
             final widgets = [];
@@ -83,7 +83,7 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
 
               final checkPointScore = totalScore.checkPointsScores.firstWhereOrNull((element) => element.checkPointNumber == checkPoint.number);
               if (checkPointScore == null) {
-                widgets.add(Text("Check Point ${checkPoint.number}"));
+                widgets.add(Text("Check Point ${checkPoint.number}", style: Theme.of(context).textTheme.headlineSmall,));
                 widgets.add(Text("Number of Tiles: ${checkPoint.tiles}"));
                 widgets.add(const Text("Total LOP: 0"));
                 widgets.add(const Text("Tiles Score: 0"));
@@ -159,6 +159,9 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
 
             widgets.add(Text("Total Score: $total", textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall,));
             widgets.add(Text("Max Score: $max", textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall,));
+            //convert int time seconds to MM:SS
+            final timeString = "${(round.time! ~/ 60).toString().padLeft(2, '0')}:${(round.time! % 60).toString().padLeft(2, '0')}";
+            widgets.add(Text("Time: $timeString", textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall,));
             widgets.add(const Divider());
 
             return SingleChildScrollView(

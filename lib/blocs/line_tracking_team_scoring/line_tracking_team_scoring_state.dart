@@ -81,11 +81,12 @@ class LineTrackingTeamRoundEnd extends LineTrackingTeamScoringState {
   final LineTrackingTeam team;
   final LineTrackingMap map;
   final String category;
+  final int time;
 
-  const LineTrackingTeamRoundEnd({required this.totalScore, required this.team, required this.map, required this.category});
+  const LineTrackingTeamRoundEnd({required this.totalScore, required this.team, required this.map, required this.category, required this.time});
 
   @override
-  List<Object> get props => [totalScore, team, map, category];
+  List<Object> get props => [totalScore, team, map, category, time];
 }
 
 class LineTrackingTeamScoringError extends LineTrackingTeamScoringState {

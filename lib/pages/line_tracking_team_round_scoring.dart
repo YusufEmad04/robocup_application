@@ -172,6 +172,8 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
 
             widgets.add(Text("Total Score: $achievedScore", textAlign: TextAlign.center,));
             widgets.add(Text("Max Score: $maxScore", textAlign: TextAlign.center,));
+            final timeString = "${(state.time ~/ 60).toString().padLeft(2, '0')}:${(state.time % 60).toString().padLeft(2, '0')}";
+            widgets.add(Text("Time: $timeString", textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineSmall,));
             widgets.add(const Divider());
 
             return SingleChildScrollView(

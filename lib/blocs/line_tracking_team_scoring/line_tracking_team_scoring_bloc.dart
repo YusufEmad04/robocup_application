@@ -31,6 +31,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
   static const int duration = 60 * 8;
   final Ticker _ticker = const Ticker();
   StreamSubscription<int>? _tickerSubscription;
+  int currentDuration = duration;
 
   final LineTrackingRepository lineTrackingRepository;
 
@@ -87,7 +88,10 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
     add(_LineTrackingTeamScoringTimerTicked(duration));
     _tickerSubscription = _ticker
         .tick(ticks: duration)
-        .listen((duration) => add(_LineTrackingTeamScoringTimerTicked(duration)));
+        .listen((duration) {
+          currentDuration = duration;
+          add(_LineTrackingTeamScoringTimerTicked(duration));
+        });
   }
 
   void _onLineTrackingTeamScoringTimerTicked(_LineTrackingTeamScoringTimerTicked event, Emitter<LineTrackingTeamScoringState> emit) async {
@@ -178,12 +182,13 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         number: roundNumber,
         lineTrackingRoundLineTrackingMapId: map!.id,
         category: category! == "primary" ? Category.PRIMARY : Category.OPEN,
+        time: duration - currentDuration,
       );
 
 
       final result = await lineTrackingRepository.createLineTrackingRound(round!);
       if (result != null) {
-        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!));
+        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!, time: duration - currentDuration));
       } else {
         //TODO save the data locally so that it is not lost
         emit(LineTrackingTeamRoundEndError());

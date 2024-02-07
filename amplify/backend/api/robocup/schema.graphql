@@ -59,5 +59,6 @@ type LineTrackingRound @model @auth(rules: [{allow: private}]) {
   hidden: Boolean
   scoreDetails: TotalScore
   category: Category!
+  time: Int
 }
  
