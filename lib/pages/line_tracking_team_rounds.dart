@@ -131,7 +131,7 @@ class LineTrackingRounds extends StatelessWidget {
       itemBuilder: (context, index){
 
         return ListTile(
-          title: Text("Round ${index + 1}"),
+          title: Text("Round ${rounds[index].number}"),
           trailing: FutureBuilder(
               future: context.read<LineTrackingRepository>().getLineTrackingMap(rounds[index].lineTrackingRoundLineTrackingMapId),
               builder: (context, snapshot){
