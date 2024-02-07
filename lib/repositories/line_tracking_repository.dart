@@ -6,10 +6,16 @@ import 'package:robocup/models/ModelProvider.dart';
 import '../models/LineTrackingRound.dart';
 import '../models/LineTrackingTeam.dart';
 import 'package:robocup/models/Category.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class LineTrackingRepository {
   final lineTrackingTeams = <LineTrackingTeam>[];
   final lineTrackingMaps = <LineTrackingMap>[];
+
+  LineTrackingRepository() {
+    uploadLocalRounds();
+  }
 
   //TODO use get instead of load to reduce the number of requests
 
@@ -141,19 +147,24 @@ class LineTrackingRepository {
 
     if (team == null){
       final lineTrackingTeamRequest = ModelQueries.list(LineTrackingTeam.classType, where: LineTrackingTeam.ID.eq(id));
-      final lineTrackingTeamResponse = await Amplify.API.query(request: lineTrackingTeamRequest).response;
 
-      final lineTrackingTeamItems = lineTrackingTeamResponse.data?.items;
+      try {
+        final lineTrackingTeamResponse = await Amplify.API.query(request: lineTrackingTeamRequest).response;
 
-      if (lineTrackingTeamItems != null) {
-        for (var item in lineTrackingTeamItems) {
-          lineTrackingTeams.add(item!);
-          if (withRounds){
-            await loadLineTrackingTeamRounds(item.id);
+        final lineTrackingTeamItems = lineTrackingTeamResponse.data?.items;
+
+        if (lineTrackingTeamItems != null) {
+          for (var item in lineTrackingTeamItems) {
+            lineTrackingTeams.add(item!);
+            if (withRounds){
+              await loadLineTrackingTeamRounds(item.id);
+            }
+            return lineTrackingTeams.firstWhere((element) => element.id == item.id);
           }
-          return lineTrackingTeams.firstWhere((element) => element.id == item.id);
+        } else {
+          return null;
         }
-      } else {
+      } catch (e) {
         return null;
       }
     }
@@ -219,31 +230,182 @@ class LineTrackingRepository {
     return map;
   }
 
-  Future<LineTrackingRound?> createLineTrackingRound(LineTrackingRound round) async {
-    final createLineTrackingRoundRequest = ModelMutations.create(round);
-    final createLineTrackingRoundResponse = await Amplify.API.mutate(request: createLineTrackingRoundRequest).response;
+  Future<LineTrackingRound?> createLineTrackingRound(LineTrackingRound round, {bool fromLocal=false}) async {
 
-    final lineTrackingRoundItem = createLineTrackingRoundResponse.data;
+    if (round.scoreDetails == null){
+      print("_______________RECIEVED ROUND WITHOUT SCORE DETAILS_______________");
+      return null;
+    }
+    
+    if(fromLocal){
+      print("----------this round is from local storage");
+      print("----------round: ${round.toJson()}");
+    }
 
-    if (lineTrackingRoundItem != null) {
+    try {
+      final createLineTrackingRoundRequest = ModelMutations.create(round);
 
-      final team = lineTrackingTeams.firstWhere((element) => element.id == round.linetrackingteamID);
-
-      if (team.lineTrackingRounds == null){
-        final lineTrackingRounds = <LineTrackingRound>[];
-        lineTrackingRounds.add(lineTrackingRoundItem);
-        final updatedTeam = team.copyWith(lineTrackingRounds: lineTrackingRounds);
-        lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
-        lineTrackingTeams.add(updatedTeam);
-      } else {
-        final updatedTeam = team.copyWith(lineTrackingRounds: [...team.lineTrackingRounds!, lineTrackingRoundItem]);
-        lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
-        lineTrackingTeams.add(updatedTeam);
+      if(!fromLocal){
+        await saveRoundLocally(round);
       }
-      return lineTrackingRoundItem;
-    } else {
+
+      final createLineTrackingRoundResponse = await Amplify.API.mutate(request: createLineTrackingRoundRequest).response;
+
+      final lineTrackingRoundItem = createLineTrackingRoundResponse.data;
+
+      if (lineTrackingRoundItem != null) {
+
+        if (!fromLocal){
+          await deleteLocalRound(round);
+        }
+
+        final team = lineTrackingTeams.firstWhere((element) => element.id == round.linetrackingteamID);
+
+        if (team.lineTrackingRounds == null){
+          final lineTrackingRounds = <LineTrackingRound>[];
+          lineTrackingRounds.add(lineTrackingRoundItem);
+          final updatedTeam = team.copyWith(lineTrackingRounds: lineTrackingRounds);
+          lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
+          lineTrackingTeams.add(updatedTeam);
+        } else {
+          final updatedTeam = team.copyWith(lineTrackingRounds: [...team.lineTrackingRounds!, lineTrackingRoundItem]);
+          lineTrackingTeams.removeWhere((element) => element.id == round.linetrackingteamID);
+          lineTrackingTeams.add(updatedTeam);
+        }
+        return lineTrackingRoundItem;
+      } else {
+        return null;
+      }
+    } catch (e) {
       return null;
     }
   }
+
+  Future<void> saveRoundLocally(LineTrackingRound round) async {
+
+    print("saving started");
+    final prefs = await SharedPreferences.getInstance();
+    final rounds = prefs.getStringList("rounds") ?? [];
+    final maps = prefs.getStringList("maps") ?? [];
+    // final totalScores = prefs.getStringList("totalScores") ?? [];
+    final checkPointScores = prefs.getStringList(round.id) ?? [];
+
+    // round id as key, round as value
+    // round id as key, total score as value
+    // round id as key, map as value
+
+    final map = round.lineTrackingMap;
+    final totalScore = round.scoreDetails!;
+    final _checkPointScores = totalScore.checkPointsScores;
+
+    final roundMap = round.toJson();
+    final mapMap = map.toJson();
+    // final totalScoreMap = totalScore.toJson();
+    final roundsJson = {
+      round.id: roundMap
+    };
+
+    final mapsJson = {
+      round.id: mapMap
+    };
+
+    final checkPointScoresList = _checkPointScores.map((e) => e.toJson()).toList();
+
+    rounds.add(jsonEncode(roundsJson));
+    maps.add(jsonEncode(mapsJson));
+    for (var element in checkPointScoresList) {
+      checkPointScores.add(jsonEncode(element));
+    }
+
+    // remove duplicates from the three lists without using sets
+    for (var i = 0; i < rounds.length; i++) {
+      for (var j = i + 1; j < rounds.length; j++) {
+        if (rounds[i] == rounds[j]) {
+          rounds.removeAt(j);
+        }
+      }
+    }
+
+    for (var i = 0; i < maps.length; i++) {
+      for (var j = i + 1; j < maps.length; j++) {
+        if (maps[i] == maps[j]) {
+          maps.removeAt(j);
+        }
+      }
+    }
+
+    for (var i = 0; i < checkPointScores.length; i++) {
+      for (var j = i + 1; j < checkPointScores.length; j++) {
+        if (checkPointScores[i] == checkPointScores[j]) {
+          checkPointScores.removeAt(j);
+        }
+      }
+    }
+
+    prefs.setStringList("rounds", rounds);
+    prefs.setStringList("maps", maps);
+    prefs.setStringList(round.id, checkPointScores);
+
+  }
+
+  Future<void> uploadLocalRounds() async {
+
+    final prefs = await SharedPreferences.getInstance();
+    final rounds = prefs.getStringList("rounds") ?? [];
+    final maps = prefs.getStringList("maps") ?? [];
+
+    for (var round in rounds){
+      final roundMapItem = jsonDecode(round);
+      final roundID = roundMapItem.keys.first.toString();
+
+      final roundMap = roundMapItem[roundID];
+      final lineTrackingRound = LineTrackingRound.fromJson(roundMap);
+
+      final mapMapItemString = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundID);
+      final mapMapItem = mapMapItemString != null ? jsonDecode(mapMapItemString) : null;
+      final mapMap = mapMapItem != null ? mapMapItem[roundID] : null;
+      final map = mapMap != null ? LineTrackingMap.fromJson(mapMap) : null;
+
+      final checkPointScoresStrings = prefs.getStringList(roundID) ?? [];
+      final checkPointScores = checkPointScoresStrings.map((e) => CheckPointScore.fromJson(jsonDecode(e))).toList();
+
+      final roundWithMap = lineTrackingRound.copyWith(lineTrackingMap: map, scoreDetails: TotalScore(checkPointsScores: checkPointScores));
+
+      final createdRound = await createLineTrackingRound(roundWithMap, fromLocal: true);
+      if (createdRound != null) {
+        rounds.remove(round);
+        maps.remove(mapMapItemString);
+        prefs.remove(roundID);
+      }
+      prefs.setStringList("rounds", rounds);
+      prefs.setStringList("maps", maps);
+    }
+
+  }
+
+  Future<void> deleteLocalRound(LineTrackingRound round) async {
+
+    final roundId = round.id;
+
+    final prefs = await SharedPreferences.getInstance();
+    final rounds = prefs.getStringList("rounds") ?? [];
+    final maps = prefs.getStringList("maps") ?? [];
+
+
+
+    final roundMap = rounds.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
+    final mapMap = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
+
+
+    rounds.remove(roundMap);
+    maps.remove(mapMap);
+
+    prefs.setStringList("rounds", rounds);
+    prefs.setStringList("maps", maps);
+    prefs.remove(roundId);
+
+  }
+
+
 
 }

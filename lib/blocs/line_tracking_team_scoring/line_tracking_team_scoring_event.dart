@@ -45,8 +45,13 @@ class LineTrackingTeamScoringCheckPointScoreEdited extends LineTrackingTeamScori
 }
 
 class LineTrackingTeamScoringRoundEnded extends LineTrackingTeamScoringEvent {
+
+  final bool fromRetry;
+
+  const LineTrackingTeamScoringRoundEnded({required this.fromRetry});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [fromRetry];
 }
 
 class LineTrackingTeamScoringExit extends LineTrackingTeamScoringEvent {

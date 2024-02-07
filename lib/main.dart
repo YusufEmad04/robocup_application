@@ -38,6 +38,10 @@ class _MyAppState extends State<MyApp> {
 
   final router = GoRouter(
     initialLocation: '/line-tracking',
+    redirect: (context, state) {
+      // check the current user type and check if he can go to the requested page
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/line-tracking',

@@ -7,7 +7,7 @@ import 'package:collection/collection.dart';
   double maxScore = 0;
 
   double lineTrackingScore = 0;
-  double evacuationZoneMultiplier = 0;
+  double evacuationZoneMultiplier = 1;
   double totalLOP = 0;
   double achievedScore = 0;
 
@@ -38,6 +38,10 @@ import 'package:collection/collection.dart';
     final checkPoint = map.checkpoints!.firstWhereOrNull((element) => element.number == checkPointScore.checkPointNumber);
 
     if (checkPoint != null){
+      print("${checkPoint.tiles}------------");
+      print("${checkPointScore.tilesPassed}------------");
+      print("${checkPointScore.totalLOP}------------");
+      print("---");
       if (checkPoint.tiles == 0){
         int livingVictimsCollected = checkPointScore.livingVictimsCollected;
         int deadVictimsCollected = checkPointScore.deadVictimsCollected;
@@ -46,7 +50,11 @@ import 'package:collection/collection.dart';
         double victimPoints = (livingVictimsCollected + deadVictimsCollected) * 1.4;
         double deduction = zoneTotalLOP * 0.05;
 
-        evacuationZoneMultiplier = victimPoints - deduction;
+        if (victimPoints - deduction <= 0) {
+          evacuationZoneMultiplier = 1;
+        } else {
+          evacuationZoneMultiplier = victimPoints - deduction;
+        }
         totalLOP += zoneTotalLOP;
 
       } else {
@@ -67,13 +75,14 @@ import 'package:collection/collection.dart';
         int speedBumps = checkPointScore.speedBumpsPassed * 5;
         int seesaws = checkPointScore.seesawsPassed * 15;
 
-        lineTrackingScore += tiles + gaps + obstacles + intersections + ramps + speedBumps + seesaws;
+        lineTrackingScore += (tiles + gaps + obstacles + intersections + ramps + speedBumps + seesaws);
         totalLOP += checkPointScore.totalLOP;
       }
     }
   }
 
   achievedScore = (lineTrackingScore + (60 - 5 * (totalLOP))) * evacuationZoneMultiplier;
+  print("achieved: ${achievedScore}");
 
   return (maxScore.roundToDouble(), achievedScore.roundToDouble());
 

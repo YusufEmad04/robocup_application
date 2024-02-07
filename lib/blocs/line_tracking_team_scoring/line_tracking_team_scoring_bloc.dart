@@ -26,6 +26,8 @@ class Ticker {
 
 class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, LineTrackingTeamScoringState> {
 
+  LineTrackingRound? round;
+
   static const int duration = 60 * 8;
   final Ticker _ticker = const Ticker();
   StreamSubscription<int>? _tickerSubscription;
@@ -52,12 +54,17 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
 
   void _onLineTrackingTeamScoringLoad(LineTrackingTeamScoringLoad event, Emitter<LineTrackingTeamScoringState> emit) async {
 
+    print("started uploading from bloc");
+    await lineTrackingRepository.uploadLocalRounds();
+    print("done uploading from bloc");
+
     team = await lineTrackingRepository.getLineTrackingTeam(event.teamID);
     map = await lineTrackingRepository.getLineTrackingMap(event.mapID);
     category = event.category;
 
     _tickerSubscription?.cancel();
     totalScore = totalScore.copyWith(checkPointsScores: []);
+    round = null;
 
     if (team != null && map != null) {
       emit(
@@ -140,17 +147,31 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
       // TODO: add round in the repository
       emit(LineTrackingTeamScoringLoading());
 
-      final teamWithRounds = await lineTrackingRepository.getLineTrackingTeam(team!.id, withRounds: true);
+      // save round without team data
 
       int roundNumber = 1;
 
-      if(teamWithRounds != null){
-        roundNumber = teamWithRounds.lineTrackingRounds == null ? 1 : teamWithRounds.lineTrackingRounds!.length + 1;
-      } else {
+      try {
+        final teamWithRounds = await lineTrackingRepository.getLineTrackingTeam(team!.id, withRounds: true);
+        if (teamWithRounds != null) {
+          roundNumber = teamWithRounds.lineTrackingRounds == null ? 1 : teamWithRounds.lineTrackingRounds!.length + 1;
+        } else {
+          roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
+        }
+      } catch (e) {
         roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
       }
 
-      final round = LineTrackingRound(
+      // round = LineTrackingRound(
+      //   linetrackingteamID: team!.id,
+      //   scoreDetails: totalScore,
+      //   lineTrackingMap: map!,
+      //   number: roundNumber,
+      //   lineTrackingRoundLineTrackingMapId: map!.id,
+      //   category: category! == "primary" ? Category.PRIMARY : Category.OPEN,
+      // );
+
+      round ??= LineTrackingRound(
         linetrackingteamID: team!.id,
         scoreDetails: totalScore,
         lineTrackingMap: map!,
@@ -160,7 +181,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
       );
 
 
-      final result = await lineTrackingRepository.createLineTrackingRound(round);
+      final result = await lineTrackingRepository.createLineTrackingRound(round!);
       if (result != null) {
         emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!));
       } else {

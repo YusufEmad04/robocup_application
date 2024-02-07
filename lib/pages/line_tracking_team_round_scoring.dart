@@ -91,7 +91,7 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if(state.timerState is TimerRunComplete){
-              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
+              context.read<LineTrackingTeamScoringBloc>().add(const LineTrackingTeamScoringRoundEnded(fromRetry: false));
             }
             state.map.checkpoints!.sort((a, b) => a.number.compareTo(b.number));
             return LayoutBuilder(
@@ -245,7 +245,8 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               child: ElevatedButton(
                 child: const Text("Retry"),
                 onPressed: (){
-                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
+                  print("round end error retry");
+                  context.read<LineTrackingTeamScoringBloc>().add(const LineTrackingTeamScoringRoundEnded(fromRetry: true));
                 },
               ),
             );
@@ -355,7 +356,7 @@ class Timer extends StatelessWidget {
                               _showDialog(context, "End Round", "Are you sure you want to end the round?", "Yes", "No").then((value) {
                                 if (value) {
                                   print("end round");
-                                  context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringRoundEnded());
+                                  context.read<LineTrackingTeamScoringBloc>().add(const LineTrackingTeamScoringRoundEnded(fromRetry: false));
                                 } else {
                                   print("don't end round");
                                 }

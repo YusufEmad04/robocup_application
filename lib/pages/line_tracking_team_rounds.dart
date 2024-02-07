@@ -101,12 +101,13 @@ class LineTrackingRounds extends StatelessWidget {
   Widget build(BuildContext context) {
     // sort by round number
     rounds.sort((a, b) => a.number.compareTo(b.number));
+    // rounds.sort((a, b) => a.createdAt!.compareTo(b.createdAt!));
     return rounds.isEmpty ? const Center(child: Text("No rounds found")) : ListView.builder(
       itemCount: rounds.length,
       itemBuilder: (context, index){
 
         return ListTile(
-          title: Text("Round ${rounds[index].number}"),
+          title: Text("Round ${index + 1}"),
           trailing: FutureBuilder(
               future: context.read<LineTrackingRepository>().getLineTrackingMap(rounds[index].lineTrackingRoundLineTrackingMapId),
               builder: (context, snapshot){
