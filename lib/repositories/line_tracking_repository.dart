@@ -8,6 +8,7 @@ import '../models/LineTrackingTeam.dart';
 import 'package:robocup/models/Category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:html';
 
 class LineTrackingRepository {
   final lineTrackingTeams = <LineTrackingTeam>[];
@@ -283,126 +284,260 @@ class LineTrackingRepository {
 
   Future<void> saveRoundLocally(LineTrackingRound round) async {
 
-    print("saving started");
-    final prefs = await SharedPreferences.getInstance();
-    final rounds = prefs.getStringList("rounds") ?? [];
-    final maps = prefs.getStringList("maps") ?? [];
-    // final totalScores = prefs.getStringList("totalScores") ?? [];
-    final checkPointScores = prefs.getStringList(round.id) ?? [];
+    // // check for platform is web
+    // if (!kIsWeb) {
+    //   print("saving started");
+    //   final prefs = await SharedPreferences.getInstance();
+    //   final rounds = prefs.getStringList("rounds") ?? [];
+    //   final maps = prefs.getStringList("maps") ?? [];
+    //   // final totalScores = prefs.getStringList("totalScores") ?? [];
+    //   final checkPointScores = prefs.getStringList(round.id) ?? [];
+    //
+    //   // round id as key, round as value
+    //   // round id as key, total score as value
+    //   // round id as key, map as value
+    //
+    //   final map = round.lineTrackingMap;
+    //   final totalScore = round.scoreDetails!;
+    //   final _checkPointScores = totalScore.checkPointsScores;
+    //
+    //   final roundMap = round.toJson();
+    //   final mapMap = map.toJson();
+    //   // final totalScoreMap = totalScore.toJson();
+    //   final roundsJson = {
+    //     round.id: roundMap
+    //   };
+    //
+    //   final mapsJson = {
+    //     round.id: mapMap
+    //   };
+    //
+    //   final checkPointScoresList = _checkPointScores.map((e) => e.toJson()).toList();
+    //
+    //   rounds.add(jsonEncode(roundsJson));
+    //   maps.add(jsonEncode(mapsJson));
+    //   for (var element in checkPointScoresList) {
+    //     checkPointScores.add(jsonEncode(element));
+    //   }
+    //
+    //   // remove duplicates from the three lists without using sets
+    //   for (var i = 0; i < rounds.length; i++) {
+    //     for (var j = i + 1; j < rounds.length; j++) {
+    //       if (rounds[i] == rounds[j]) {
+    //         rounds.removeAt(j);
+    //       }
+    //     }
+    //   }
+    //
+    //   for (var i = 0; i < maps.length; i++) {
+    //     for (var j = i + 1; j < maps.length; j++) {
+    //       if (maps[i] == maps[j]) {
+    //         maps.removeAt(j);
+    //       }
+    //     }
+    //   }
+    //
+    //   for (var i = 0; i < checkPointScores.length; i++) {
+    //     for (var j = i + 1; j < checkPointScores.length; j++) {
+    //       if (checkPointScores[i] == checkPointScores[j]) {
+    //         checkPointScores.removeAt(j);
+    //       }
+    //     }
+    //   }
+    //
+    //   prefs.setStringList("rounds", rounds);
+    //   prefs.setStringList("maps", maps);
+    //   prefs.setStringList(round.id, checkPointScores);
+    // } else {
+      final localStorage = window.localStorage;
+      var roundsString = localStorage["rounds"] ?? "[]";
+      var mapsString = localStorage["maps"] ?? "[]";
+      var checkPointScoresString = localStorage[round.id] ?? "[]";
 
-    // round id as key, round as value
-    // round id as key, total score as value
-    // round id as key, map as value
+      final rounds = jsonDecode(roundsString);
+      final maps = jsonDecode(mapsString);
+      final checkPointScores = jsonDecode(checkPointScoresString);
 
-    final map = round.lineTrackingMap;
-    final totalScore = round.scoreDetails!;
-    final _checkPointScores = totalScore.checkPointsScores;
+      final map = round.lineTrackingMap;
+      final totalScore = round.scoreDetails!;
+      final _checkPointScores = totalScore.checkPointsScores;
 
-    final roundMap = round.toJson();
-    final mapMap = map.toJson();
-    // final totalScoreMap = totalScore.toJson();
-    final roundsJson = {
-      round.id: roundMap
-    };
+      final roundMap = round.toJson();
+      final mapMap = map.toJson();
+      // final totalScoreMap = totalScore.toJson();
+      final roundsJson = {
+        round.id: roundMap
+      };
 
-    final mapsJson = {
-      round.id: mapMap
-    };
+      final mapsJson = {
+        round.id: mapMap
+      };
 
-    final checkPointScoresList = _checkPointScores.map((e) => e.toJson()).toList();
+      final checkPointScoresList = _checkPointScores.map((e) => e.toJson()).toList();
 
-    rounds.add(jsonEncode(roundsJson));
-    maps.add(jsonEncode(mapsJson));
-    for (var element in checkPointScoresList) {
-      checkPointScores.add(jsonEncode(element));
-    }
+      rounds.add(jsonEncode(roundsJson));
+      maps.add(jsonEncode(mapsJson));
 
-    // remove duplicates from the three lists without using sets
-    for (var i = 0; i < rounds.length; i++) {
-      for (var j = i + 1; j < rounds.length; j++) {
-        if (rounds[i] == rounds[j]) {
-          rounds.removeAt(j);
+      for (var element in checkPointScoresList) {
+        checkPointScores.add(jsonEncode(element));
+      }
+
+      for (var i = 0; i < rounds.length; i++) {
+        for (var j = i + 1; j < rounds.length; j++) {
+          if (rounds[i] == rounds[j]) {
+            rounds.removeAt(j);
+          }
         }
       }
-    }
 
-    for (var i = 0; i < maps.length; i++) {
-      for (var j = i + 1; j < maps.length; j++) {
-        if (maps[i] == maps[j]) {
-          maps.removeAt(j);
+      for (var i = 0; i < maps.length; i++) {
+        for (var j = i + 1; j < maps.length; j++) {
+          if (maps[i] == maps[j]) {
+            maps.removeAt(j);
+          }
         }
       }
-    }
 
-    for (var i = 0; i < checkPointScores.length; i++) {
-      for (var j = i + 1; j < checkPointScores.length; j++) {
-        if (checkPointScores[i] == checkPointScores[j]) {
-          checkPointScores.removeAt(j);
+      for (var i = 0; i < checkPointScores.length; i++) {
+        for (var j = i + 1; j < checkPointScores.length; j++) {
+          if (checkPointScores[i] == checkPointScores[j]) {
+            checkPointScores.removeAt(j);
+          }
         }
       }
-    }
 
-    prefs.setStringList("rounds", rounds);
-    prefs.setStringList("maps", maps);
-    prefs.setStringList(round.id, checkPointScores);
+      localStorage["rounds"] = jsonEncode(rounds);
+      localStorage["maps"] = jsonEncode(maps);
+      localStorage[round.id] = jsonEncode(checkPointScores);
 
   }
 
   Future<void> uploadLocalRounds() async {
 
-    final prefs = await SharedPreferences.getInstance();
-    final rounds = prefs.getStringList("rounds") ?? [];
-    final maps = prefs.getStringList("maps") ?? [];
+    final localStorage = window.localStorage;
+    var roundsString = localStorage["rounds"] ?? "[]";
+    var mapsString = localStorage["maps"] ?? "[]";
 
-    for (var round in rounds){
+    var rounds = jsonDecode(roundsString);
+    var maps = jsonDecode(mapsString);
+
+    print("runtime type of maps: ${maps.runtimeType}");
+
+    for (var round in rounds) {
       final roundMapItem = jsonDecode(round);
       final roundID = roundMapItem.keys.first.toString();
 
       final roundMap = roundMapItem[roundID];
       final lineTrackingRound = LineTrackingRound.fromJson(roundMap);
 
-      final mapMapItemString = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundID);
+      final mapMapItemString = (maps as List).firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundID);
       final mapMapItem = mapMapItemString != null ? jsonDecode(mapMapItemString) : null;
+      print("runtime type of mapMapItem: ${mapMapItem.runtimeType}");
       final mapMap = mapMapItem != null ? mapMapItem[roundID] : null;
       final map = mapMap != null ? LineTrackingMap.fromJson(mapMap) : null;
 
-      final checkPointScoresStrings = prefs.getStringList(roundID) ?? [];
-      final checkPointScores = checkPointScoresStrings.map((e) => CheckPointScore.fromJson(jsonDecode(e))).toList();
+      print("runtime type of map: ${map.runtimeType}");
+
+      final checkPointScoresStrings = localStorage[roundID] ?? "[]";
+      final checkPointScores = (jsonDecode(checkPointScoresStrings) as List).map((e) => CheckPointScore.fromJson(jsonDecode(e))).toList();
+
+      print("runtime type of checkPointScores: ${checkPointScores.runtimeType}");
 
       final roundWithMap = lineTrackingRound.copyWith(lineTrackingMap: map, scoreDetails: TotalScore(checkPointsScores: checkPointScores));
 
       final createdRound = await createLineTrackingRound(roundWithMap, fromLocal: true);
+
       if (createdRound != null) {
         rounds.remove(round);
         maps.remove(mapMapItemString);
-        prefs.remove(roundID);
+        localStorage.remove(roundID);
       }
-      prefs.setStringList("rounds", rounds);
-      prefs.setStringList("maps", maps);
+      localStorage["rounds"] = jsonEncode(rounds);
+      localStorage["maps"] = jsonEncode(maps);
     }
+
+
+    // final prefs = await SharedPreferences.getInstance();
+    // final rounds = prefs.getStringList("rounds") ?? [];
+    // final maps = prefs.getStringList("maps") ?? [];
+    //
+    // for (var round in rounds){
+    //   final roundMapItem = jsonDecode(round);
+    //   final roundID = roundMapItem.keys.first.toString();
+    //
+    //   final roundMap = roundMapItem[roundID];
+    //   final lineTrackingRound = LineTrackingRound.fromJson(roundMap);
+    //
+    //   final mapMapItemString = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundID);
+    //   final mapMapItem = mapMapItemString != null ? jsonDecode(mapMapItemString) : null;
+    //   final mapMap = mapMapItem != null ? mapMapItem[roundID] : null;
+    //   final map = mapMap != null ? LineTrackingMap.fromJson(mapMap) : null;
+    //
+    //   final checkPointScoresStrings = prefs.getStringList(roundID) ?? [];
+    //   final checkPointScores = checkPointScoresStrings.map((e) => CheckPointScore.fromJson(jsonDecode(e))).toList();
+    //
+    //   final roundWithMap = lineTrackingRound.copyWith(lineTrackingMap: map, scoreDetails: TotalScore(checkPointsScores: checkPointScores));
+    //
+    //   final createdRound = await createLineTrackingRound(roundWithMap, fromLocal: true);
+    //   if (createdRound != null) {
+    //     rounds.remove(round);
+    //     maps.remove(mapMapItemString);
+    //     prefs.remove(roundID);
+    //   }
+    //   prefs.setStringList("rounds", rounds);
+    //   prefs.setStringList("maps", maps);
+    //   print("done");
+    // }
 
   }
 
   Future<void> deleteLocalRound(LineTrackingRound round) async {
 
+    print("deleting round: ${round.id}");
+
     final roundId = round.id;
 
-    final prefs = await SharedPreferences.getInstance();
-    final rounds = prefs.getStringList("rounds") ?? [];
-    final maps = prefs.getStringList("maps") ?? [];
+    final localStorage = window.localStorage;
+    var roundsString = localStorage["rounds"] ?? "[]";
+    var mapsString = localStorage["maps"] ?? "[]";
+
+    var rounds = jsonDecode(roundsString);
+    var maps = jsonDecode(mapsString);
+
+    final roundMapItemString = (rounds as List).firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundId);
+    final roundMapItem = roundMapItemString != null ? jsonDecode(roundMapItemString) : null;
+
+    final mapMapItemString = (maps as List).firstWhereOrNull((element) => jsonDecode(element).keys.first.toString() == roundId);
+    final mapMapItem = mapMapItemString != null ? jsonDecode(mapMapItemString) : null;
+
+    rounds.remove(roundMapItemString);
+    maps.remove(mapMapItemString);
+
+    localStorage["rounds"] = jsonEncode(rounds);
+    localStorage["maps"] = jsonEncode(maps);
+    localStorage.remove(roundId);
+
+    print("done deleteing");
 
 
 
-    final roundMap = rounds.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
-    final mapMap = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
-
-
-    rounds.remove(roundMap);
-    maps.remove(mapMap);
-
-    prefs.setStringList("rounds", rounds);
-    prefs.setStringList("maps", maps);
-    prefs.remove(roundId);
+    //
+    // final prefs = await SharedPreferences.getInstance();
+    // final rounds = prefs.getStringList("rounds") ?? [];
+    // final maps = prefs.getStringList("maps") ?? [];
+    //
+    //
+    //
+    // final roundMap = rounds.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
+    // final mapMap = maps.firstWhereOrNull((element) => jsonDecode(element).keys.first == roundId);
+    //
+    //
+    // rounds.remove(roundMap);
+    // maps.remove(mapMap);
+    //
+    // prefs.setStringList("rounds", rounds);
+    // prefs.setStringList("maps", maps);
+    // prefs.remove(roundId);
 
   }
 
