@@ -111,7 +111,7 @@ class _LineTrackingTeamsItemsState extends State<LineTrackingTeamsItems> {
               itemBuilder: (context, index){
                 return ListTile(
                   title: Text("Team: ${items[index].name}"),
-                  subtitle: Text("ID: ${items[index].robocupID}"),
+                  subtitle: Text("School: ${items[index].robocupID}"),
                   onTap: (){
                     // context.go("/line-tracking/teams/rounds/${lineTrackingTeams[index].id}");
                     context.go("/line-tracking/${widget.category}/teams/rounds/${items[index].id}");
