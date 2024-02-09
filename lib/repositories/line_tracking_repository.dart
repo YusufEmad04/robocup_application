@@ -1,4 +1,5 @@
 import 'package:amplify_api/amplify_api.dart';
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_flutter/amplify_flutter.dart' hide Category;
 import 'package:robocup/models/LineTrackingMap.dart';
 import 'package:collection/collection.dart';
@@ -6,16 +7,22 @@ import 'package:robocup/models/ModelProvider.dart';
 import '../models/LineTrackingRound.dart';
 import '../models/LineTrackingTeam.dart';
 import 'package:robocup/models/Category.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:html';
 
 class LineTrackingRepository {
   final lineTrackingTeams = <LineTrackingTeam>[];
   final lineTrackingMaps = <LineTrackingMap>[];
+  String? category;
 
   LineTrackingRepository() {
     uploadLocalRounds();
+  }
+
+  Future<String?> getCurrentUser() async {
+    final session = await Amplify.Auth.getPlugin(AmplifyAuthCognito.pluginKey).fetchAuthSession();
+    category = session.userPoolTokensResult.value.idToken.groups.isNotEmpty ? session.userPoolTokensResult.value.idToken.groups.first : null;
+    return category;
   }
 
   //TODO use get instead of load to reduce the number of requests

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class LineTrackingChooseCategory extends StatelessWidget {
-  const LineTrackingChooseCategory({super.key});
+class MazeDashboard extends StatelessWidget {
+  const MazeDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Choose Category'),
+        title: const Text('Maze Dashboard'),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -34,13 +34,13 @@ class LineTrackingChooseCategory extends StatelessWidget {
                           onPressed: (){
                             context.go("/line-tracking/primary");
                           },
-                          child: const Text("Primary"),
+                          child: const Text("Edit Maps"),
                         ),
                         ElevatedButton(
                           onPressed: (){
                             context.go("/line-tracking/open");
                           },
-                          child: const Text("Open"),
+                          child: const Text("View Teams"),
                         )
                       ],
                     )
@@ -53,29 +53,3 @@ class LineTrackingChooseCategory extends StatelessWidget {
     );
   }
 }
-
-
-//return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-//         title: const Text('Choose Category'),
-//       ),
-//       body: Center(
-//         child: Column(
-//           children: [
-//             ListTile(
-//               title: const Text("Primary"),
-//               onTap: (){
-//                 context.go("/line-tracking/primary");
-//               },
-//             ),
-//             ListTile(
-//               title: const Text("Open"),
-//               onTap: (){
-//                 context.go("/line-tracking/open");
-//               },
-//             )
-//           ]
-//         ),
-//       ),
-//     );

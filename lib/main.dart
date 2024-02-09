@@ -38,11 +38,39 @@ class _MyAppState extends State<MyApp> {
 
   final router = GoRouter(
     initialLocation: '/line-tracking',
-    redirect: (context, state) {
-      // check the current user type and check if he can go to the requested page
-      return null;
+    redirect: (context, state) async {
+      String? category = context.read<LineTrackingRepository>().category;
+      if (category == null){
+        category = await context.read<LineTrackingRepository>().getCurrentUser();
+        if (category == null){
+          return '/unauthorized';
+        }
+      }
+      String? path = state.fullPath;
+
+      if (path != null) {
+
+        if (category == "LINETRACKING_JUDGES") {
+          if (path.contains("line-tracking")){
+            return null;
+          }
+          if (path.contains("unauthorized")){
+            return '/line-tracking';
+          }
+          return '/line-tracking';
+        }
+      }
+      return '/unauthorized';
     },
     routes: [
+      GoRoute(
+        path: '/unauthorized',
+        builder: (context, state) => const Scaffold(
+          body: Center(
+            child: Text('You are not authorized to access this page'),
+          ),
+        ),
+      ),
       GoRoute(
         path: '/line-tracking',
         builder: (context, state) => const LineTrackingChooseCategory(),
