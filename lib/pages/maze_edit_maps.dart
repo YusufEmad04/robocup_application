@@ -30,7 +30,7 @@ class MazeEnterPassword extends StatelessWidget {
   final Function(String) onPasswordEntered;
   MazeEnterPassword({required this.onPasswordEntered, super.key});
 
-  TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

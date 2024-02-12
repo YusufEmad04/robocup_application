@@ -32,13 +32,13 @@ class MazeDashboard extends StatelessWidget {
                       children: [
                         ElevatedButton(
                           onPressed: (){
-                            context.go("/line-tracking/primary");
+                            // context.go("/line-tracking/primary");
                           },
                           child: const Text("Edit Maps"),
                         ),
                         ElevatedButton(
                           onPressed: (){
-                            context.go("/line-tracking/open");
+                            // context.go("/line-tracking/open");
                           },
                           child: const Text("View Teams"),
                         )

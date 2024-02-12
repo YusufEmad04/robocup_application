@@ -161,7 +161,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
           if (teamWithRounds.lineTrackingRounds != null) {
             // roundNumber = teamWithRounds.lineTrackingRounds!.length + 1;
             final maxRoundNumber = teamWithRounds.lineTrackingRounds!.isNotEmpty ? teamWithRounds.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-            roundNumber = maxRoundNumber + 1;
+            roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
           } else {
             roundNumber = 1;
           }
@@ -170,14 +170,14 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
           // roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
           if (team!.lineTrackingRounds != null) {
             final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-            roundNumber = maxRoundNumber + 1;
+            roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
           }
         }
       } catch (e) {
         // roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
         if (team!.lineTrackingRounds != null) {
           final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-          roundNumber = maxRoundNumber + 1;
+          roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
         }
       }
 

@@ -15,10 +15,15 @@ import 'package:robocup/pages/line_tracking_team_round_details.dart';
 import 'package:robocup/pages/line_tracking_team_round_scoring.dart';
 import 'package:robocup/pages/line_tracking_team_rounds.dart';
 import 'package:robocup/pages/line_tracking_teams.dart';
+import 'package:robocup/pages/maze_dashboard.dart';
+import 'package:robocup/pages/maze_team_round_scoring.dart';
+import 'package:robocup/pages/maze_team_rounds.dart';
+import 'package:robocup/pages/maze_teams.dart';
 import 'package:robocup/repositories/line_tracking_repository.dart';
 
 import 'amplifyconfiguration.dart';
 import 'blocs/line_tracking_team_scoring/line_tracking_team_scoring_bloc.dart';
+import 'blocs/maze_team_scoring/maze_team_scoring_bloc.dart';
 import 'models/ModelProvider.dart';
 
 void main() {
@@ -58,6 +63,15 @@ class _MyAppState extends State<MyApp> {
             return '/line-tracking';
           }
           return '/line-tracking';
+        } else if (category == "MAZE_JUDGES") {
+          if (path.contains("maze")){
+            return null;
+          }
+          if (path.contains("unauthorized")){
+            return '/maze';
+          }
+          return '/maze';
+
         }
       }
       return '/unauthorized';
@@ -127,6 +141,28 @@ class _MyAppState extends State<MyApp> {
               ]
           )
         ]
+      ),
+      GoRoute(
+        path: '/maze',
+        builder: (context, state) => const MazeDashboard(),
+        routes: [
+          GoRoute(
+            path: 'teams',
+            builder: (context, state) => const MazeTeams(),
+            routes: [
+              GoRoute(
+                path: 'rounds/:teamID',
+                builder: (context, state) => const MazeTeamRounds(),
+                routes: [
+                  GoRoute(
+                    path: 'round-scoring',
+                    builder: (context, state) => const MazeTeamRoundScoring(teamID: "", mapID: "",),
+                  ),
+                ]
+              )
+            ]
+          )
+        ]
       )
     ]
   );
@@ -170,7 +206,8 @@ class _MyAppState extends State<MyApp> {
               providers: [
                 BlocProvider(create: (_) => LineTrackingTeamsBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
                 BlocProvider(create: (_) => LineTrackingTeamScoringBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
-                BlocProvider(create: (_) => LineTrackingTeamRoundsBloc(lineTrackingRepository: context.read<LineTrackingRepository>()))
+                BlocProvider(create: (_) => LineTrackingTeamRoundsBloc(lineTrackingRepository: context.read<LineTrackingRepository>())),
+                BlocProvider(create: (_) => MazeTeamScoringBloc(),)
               ],
               child: MaterialApp.router(
                 builder: Authenticator.builder(),
