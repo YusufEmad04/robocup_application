@@ -133,7 +133,7 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               );
 
               widgets.add(
-                checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!})      ${checkPointScore.obstaclesPassed} * 15 = ${checkPointScore.obstaclesPassed * 15}", textAlign: TextAlign.center,)
+                checkPoint.obstacles! > 0 ? Text("Obstacles Score: (obstacles passed: ${checkPointScore.obstaclesPassed} / ${checkPoint.obstacles!})      ${checkPointScore.obstaclesPassed} * 20 = ${checkPointScore.obstaclesPassed * 20}", textAlign: TextAlign.center,)
                     : const SizedBox.shrink()
               );
               widgets.add(
@@ -145,11 +145,11 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
                     : const SizedBox.shrink()
               );
               widgets.add(
-                checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps})      ${checkPointScore.speedBumpsPassed} * 5 = ${checkPointScore.speedBumpsPassed * 5}", textAlign: TextAlign.center,)
+                checkPoint.speedBumps > 0 ? Text("Speed Bumps Score: (speed bumps passed: ${checkPointScore.speedBumpsPassed} / ${checkPoint.speedBumps})      ${checkPointScore.speedBumpsPassed} * 10 = ${checkPointScore.speedBumpsPassed * 10}", textAlign: TextAlign.center,)
                     : const SizedBox.shrink()
               );
               widgets.add(
-                checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!})      ${checkPointScore.seesawsPassed} * 15 = ${checkPointScore.seesawsPassed * 15}", textAlign: TextAlign.center,)
+                checkPoint.seesaws! > 0 ? Text("Seesaws Score: (seesaws passed: ${checkPointScore.seesawsPassed} / ${checkPoint.seesaws!})      ${checkPointScore.seesawsPassed} * 20 = ${checkPointScore.seesawsPassed * 20}", textAlign: TextAlign.center,)
                     : const SizedBox.shrink()
               );
               widgets.add(const Divider());
