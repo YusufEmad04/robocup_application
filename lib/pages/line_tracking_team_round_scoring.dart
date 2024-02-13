@@ -372,6 +372,10 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
     final boolController = BoolValue(value: state.exitBonus);
     print(boolController.value);
 
+    final sortedCheckPointsByNumber = widget.checkPoints.sorted((a, b) => b.number.compareTo(a.number));
+    final checkPointEvacuationZoneIn = sortedCheckPointsByNumber[1].number;
+    final checkPointEvacuationZoneOut = sortedCheckPointsByNumber[0].number;
+
     return checkPointScoringIndex == null?
     Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -385,6 +389,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
             )
         ),
         Expanded(
+          flex: 2,
           child: HorizontalCheckBox(
             text: "Exit Bonus",
             controller: boolController,
@@ -410,7 +415,7 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
           child: ListTile(
             title: Center(
                 child: Text(
-                    "Check Point ${i.number}",
+                    i.number == checkPointEvacuationZoneIn ? "Evacuation Zone In" : i.number == checkPointEvacuationZoneOut ? "Evacuation Zone Out" : "Check Point ${i.number}",
                     style: Theme.of(context).textTheme.headlineSmall
                 )
             ),

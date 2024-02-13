@@ -102,7 +102,7 @@ import 'package:collection/collection.dart';
   //     exitBonus =  (60 - 5 * (totalLOP));
   //   }
   // }
-  exitBonus = exit ? (60 - 5 * (totalLOP)) : 0;
+  exitBonus = exit ? (60 - (5 * (totalLOP))) : 0;
 
   achievedScore = (lineTrackingScore + exitBonus + 5) * evacuationZoneMultiplier;
   print(evacuationZoneMultiplier);
