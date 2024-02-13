@@ -143,7 +143,7 @@ class LineTrackingRounds extends StatelessWidget {
                 }
                 if (snapshot.data is LineTrackingMap){
                   final map = snapshot.data as LineTrackingMap;
-                  final (max, total) = getMaxAndTotalScore(rounds[index].scoreDetails!, map);
+                  final (max, total) = getMaxAndTotalScore(rounds[index].scoreDetails!, map, rounds[index].round!);
                   return Text("Score: $total / $max");
                 }
                 return const SizedBox.shrink();

@@ -72,7 +72,7 @@ class LineTrackingTeamRoundDetails extends StatelessWidget {
           } else if (snapshot.hasData){
 
             final (totalScore, map, round) = snapshot.data as (TotalScore, LineTrackingMap, LineTrackingRound);
-            final (max, total) = getMaxAndTotalScore(totalScore, map);
+            final (max, total) = getMaxAndTotalScore(totalScore, map, round.round!);
 
             final widgets = [];
 

@@ -1,3 +1,9 @@
+type MazeTeam @model @auth(rules: [{allow: private}]) {
+  id: ID!
+  name: String!
+  robocupID: String
+}
+
 enum Category {
   PRIMARY
   OPEN
@@ -60,5 +66,6 @@ type LineTrackingRound @model @auth(rules: [{allow: private}]) {
   scoreDetails: TotalScore
   category: Category!
   time: Int
+  round: Boolean
 }
  

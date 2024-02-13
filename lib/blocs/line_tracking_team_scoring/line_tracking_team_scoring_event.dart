@@ -37,8 +37,9 @@ class LineTrackingTeamScoringTimerReset extends LineTrackingTeamScoringEvent {
 
 class LineTrackingTeamScoringCheckPointScoreEdited extends LineTrackingTeamScoringEvent {
   final CheckPointScore checkPointScore;
+  bool? exitBonus;
 
-  const LineTrackingTeamScoringCheckPointScoreEdited(this.checkPointScore);
+  LineTrackingTeamScoringCheckPointScoreEdited(this.checkPointScore, {this.exitBonus});
 
   @override
   List<Object> get props => [checkPointScore];

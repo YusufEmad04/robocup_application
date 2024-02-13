@@ -27,7 +27,7 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
         buildWhen: (previous, current) {
           if (current is LineTrackingTeamScoringReady && previous is LineTrackingTeamScoringReady) {
             // return previous.timerState != current.timerState;
-            if (previous.timerState != current.timerState && previous.map == current.map && previous.team == current.team && previous.totalScore == current.totalScore) {
+            if (previous.timerState != current.timerState && previous.map == current.map && previous.team == current.team && previous.totalScore == current.totalScore && previous.exitBonus == current.exitBonus) {
               if (previous.timerState is TimerInitial || current.timerState is TimerInitial || current.timerState is TimerRunComplete){
                 return true;
               }
@@ -168,7 +168,7 @@ class LineTrackingTeamRoundScoring extends StatelessWidget {
               }
             }
             
-            final (maxScore, achievedScore) = getMaxAndTotalScore(state.totalScore, state.map);
+            final (maxScore, achievedScore) = getMaxAndTotalScore(state.totalScore, state.map, state.exitBonus);
 
             widgets.add(Text("Total Score: $achievedScore", textAlign: TextAlign.center,));
             widgets.add(Text("Max Score: $maxScore", textAlign: TextAlign.center,));
@@ -369,6 +369,9 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
       totalLOP += i.totalLOP;
     }
 
+    final boolController = BoolValue(value: state.exitBonus);
+    print(boolController.value);
+
     return checkPointScoringIndex == null?
     Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -380,6 +383,27 @@ class _CheckPointsItemsState extends State<CheckPointsItems> {
               color: Colors.grey[300],
               child: Text("total LOP: $totalLOP",),
             )
+        ),
+        Expanded(
+          child: HorizontalCheckBox(
+            text: "Exit Bonus",
+            controller: boolController,
+            onChanged: () {
+              context.read<LineTrackingTeamScoringBloc>().add(LineTrackingTeamScoringCheckPointScoreEdited(CheckPointScore(
+                checkPointNumber: 0,
+                gapsPassed: 0,
+                tilesPassed: boolController.value ? widget.checkPoints.last.tiles : 0,
+                obstaclesPassed: 0,
+                intersectionsPassed: 0,
+                rampsPassed: 0,
+                speedBumpsPassed: 0,
+                seesawsPassed: 0,
+                livingVictimsCollected: 0,
+                deadVictimsCollected: 0,
+                totalLOP: 0,
+              ), exitBonus: boolController.value));
+            },
+          ),
         ),
         for (var i in widget.checkPoints) i.tiles > 0 ? Expanded(
           flex: 3,
@@ -636,8 +660,9 @@ class _HorizontalCounterState extends State<HorizontalCounter> {
 class HorizontalCheckBox extends StatefulWidget {
   final BoolValue controller;
   final onChanged;
+  String text = "CheckPoint Passed";
 
-  const HorizontalCheckBox({required this.controller, required this.onChanged, super.key});
+  HorizontalCheckBox({required this.controller, required this.onChanged, super.key, this.text = "CheckPoint Passed"});
 
   @override
   State<HorizontalCheckBox> createState() => _HorizontalCheckBoxState();
@@ -666,7 +691,7 @@ class _HorizontalCheckBoxState extends State<HorizontalCheckBox> {
             ),
             SizedBox(
               width: constraints.maxWidth * 0.3,
-              child: const Center(child: Text("CheckPoint Passed"))
+              child: Center(child: Text(widget.text))
             )
           ]
         );

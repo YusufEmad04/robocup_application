@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:robocup/models/ModelProvider.dart';
 import 'package:collection/collection.dart';
 
-(double, double) getMaxAndTotalScore(TotalScore totalScore, LineTrackingMap map){
+(double, double) getMaxAndTotalScore(TotalScore totalScore, LineTrackingMap map, bool exit) {
   double maxLineTrackingScore = 0;
   double maxEvacuationZoneMultiplier = 0;
   double maxScore = 0;
@@ -97,11 +97,12 @@ import 'package:collection/collection.dart';
 
   double exitBonus = 0;
 
-  if(checkPoint != null){
-    if(checkPoint.tilesPassed != 0) {
-      exitBonus =  (60 - 5 * (totalLOP));
-    }
-  }
+  // if(checkPoint != null && exitBonus == true){
+  //   if(checkPoint.tilesPassed != 0) {
+  //     exitBonus =  (60 - 5 * (totalLOP));
+  //   }
+  // }
+  exitBonus = exit ? (60 - 5 * (totalLOP)) : 0;
 
   achievedScore = (lineTrackingScore + exitBonus + 5) * evacuationZoneMultiplier;
   print(evacuationZoneMultiplier);

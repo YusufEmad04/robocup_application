@@ -41,6 +41,8 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
   LineTrackingMap? map;
   String? category;
 
+  bool exitBonus = false;
+
   LineTrackingTeamScoringBloc({required this.lineTrackingRepository}) : super(LineTrackingTeamScoringInitial()) {
     on<LineTrackingTeamScoringLoad>(_onLineTrackingTeamScoringLoad);
     on<LineTrackingTeamScoringTimerStarted>(_onLineTrackingTeamScoringTimerStarted);
@@ -75,6 +77,7 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
             map: map!,
             timerState: const TimerInitial(duration),
             category: event.category,
+            exitBonus: false,
           )
       );
     } else {
@@ -130,6 +133,11 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
   void _onLineTrackingTeamScoringCheckPointScoreEdited(LineTrackingTeamScoringCheckPointScoreEdited event, Emitter<LineTrackingTeamScoringState> emit) async {
     if (state is LineTrackingTeamScoringReady) {
 
+      if (event.exitBonus != null){
+        emit((state as LineTrackingTeamScoringReady).copyWith(exitBonus: event.exitBonus));
+        exitBonus = event.exitBonus!;
+        return;
+      }
 
       // totalScore.checkPointsScores.removeWhere((element) => element.checkPointNumber == event.checkPointScore.checkPointNumber);
       // totalScore.checkPointsScores.add(event.checkPointScore);
@@ -160,8 +168,8 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         if (teamWithRounds != null) {
           if (teamWithRounds.lineTrackingRounds != null) {
             // roundNumber = teamWithRounds.lineTrackingRounds!.length + 1;
-            final maxRoundNumber = teamWithRounds.lineTrackingRounds!.isNotEmpty ? teamWithRounds.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-            roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
+            final maxRoundNumber = teamWithRounds.lineTrackingRounds!.isNotEmpty ? teamWithRounds.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : null;
+            roundNumber = maxRoundNumber == null ? 1 : maxRoundNumber + 1;
           } else {
             roundNumber = 1;
           }
@@ -169,15 +177,15 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         } else {
           // roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
           if (team!.lineTrackingRounds != null) {
-            final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-            roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
+            final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : null;
+            roundNumber = maxRoundNumber == null ? 1 : maxRoundNumber + 1;
           }
         }
       } catch (e) {
         // roundNumber = team!.lineTrackingRounds == null ? 1 : team!.lineTrackingRounds!.length + 1;
         if (team!.lineTrackingRounds != null) {
-          final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : 1;
-          roundNumber = maxRoundNumber != 1 ? maxRoundNumber + 1 : 1;
+          final maxRoundNumber = team!.lineTrackingRounds!.isNotEmpty ? team!.lineTrackingRounds!.map((e) => e.number).reduce((value, element) => value > element ? value : element) : null;
+          roundNumber = maxRoundNumber == null ? 1 : maxRoundNumber + 1;
         }
       }
 
@@ -198,12 +206,13 @@ class LineTrackingTeamScoringBloc extends Bloc<LineTrackingTeamScoringEvent, Lin
         lineTrackingRoundLineTrackingMapId: map!.id,
         category: category! == "primary" ? Category.PRIMARY : Category.OPEN,
         time: duration - currentDuration,
+        round: exitBonus,
       );
 
 
       final result = await lineTrackingRepository.createLineTrackingRound(round!);
       if (result != null) {
-        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!, time: duration - currentDuration));
+        emit(LineTrackingTeamRoundEnd(totalScore: totalScore, map: map!, team: team!, category: category!, time: duration - currentDuration, exitBonus: exitBonus));
       } else {
         //TODO save the data locally so that it is not lost
         emit(LineTrackingTeamRoundEndError());

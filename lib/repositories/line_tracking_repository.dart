@@ -251,10 +251,13 @@ class LineTrackingRepository {
     }
 
     try {
+      print("start");
       final createLineTrackingRoundRequest = ModelMutations.create(round);
 
       if(!fromLocal){
+        print("start saving");
         await saveRoundLocally(round);
+        print("saved locally");
       }
 
       final createLineTrackingRoundResponse = await Amplify.API.mutate(request: createLineTrackingRoundRequest).response;
@@ -265,6 +268,7 @@ class LineTrackingRepository {
 
         if (!fromLocal){
           await deleteLocalRound(round);
+          print("deleted");
         }
 
         final team = lineTrackingTeams.firstWhere((element) => element.id == round.linetrackingteamID);
@@ -282,9 +286,11 @@ class LineTrackingRepository {
         }
         return lineTrackingRoundItem;
       } else {
+        print("error 11");
         return null;
       }
     } catch (e) {
+      print(e);
       return null;
     }
   }
@@ -416,6 +422,9 @@ class LineTrackingRepository {
       localStorage["rounds"] = jsonEncode(rounds);
       localStorage["maps"] = jsonEncode(maps);
       localStorage[round.id] = jsonEncode(checkPointScores);
+      print("savnig round");
+      localStorage[round.id + "exitBonus"] = round.round! ? "true" : "false";
+      print("saved round");
 
   }
 
@@ -424,6 +433,7 @@ class LineTrackingRepository {
     final localStorage = window.localStorage;
     var roundsString = localStorage["rounds"] ?? "[]";
     var mapsString = localStorage["maps"] ?? "[]";
+    var exitBonusString = localStorage["exitBonus"] ?? "false";
 
     var rounds = jsonDecode(roundsString);
     var maps = jsonDecode(mapsString);
@@ -450,7 +460,7 @@ class LineTrackingRepository {
 
       print("runtime type of checkPointScores: ${checkPointScores.runtimeType}");
 
-      final roundWithMap = lineTrackingRound.copyWith(lineTrackingMap: map, scoreDetails: TotalScore(checkPointsScores: checkPointScores));
+      final roundWithMap = lineTrackingRound.copyWith(lineTrackingMap: map, scoreDetails: TotalScore(checkPointsScores: checkPointScores), round: exitBonusString == "true" ? true : false);
 
       final createdRound = await createLineTrackingRound(roundWithMap, fromLocal: true);
 
@@ -461,6 +471,7 @@ class LineTrackingRepository {
       }
       localStorage["rounds"] = jsonEncode(rounds);
       localStorage["maps"] = jsonEncode(maps);
+      localStorage.remove("${roundID}exitBonus");
     }
 
 
@@ -523,6 +534,7 @@ class LineTrackingRepository {
     localStorage["rounds"] = jsonEncode(rounds);
     localStorage["maps"] = jsonEncode(maps);
     localStorage.remove(roundId);
+    localStorage.remove("${roundId}exitBonus");
 
     print("done deleteing");
 

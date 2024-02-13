@@ -24,6 +24,7 @@ import 'CheckPoint.dart';
 import 'LineTrackingMap.dart';
 import 'LineTrackingRound.dart';
 import 'LineTrackingTeam.dart';
+import 'MazeTeam.dart';
 import 'CheckPointScore.dart';
 import 'TotalScore.dart';
 
@@ -33,13 +34,14 @@ export 'CheckPointScore.dart';
 export 'LineTrackingMap.dart';
 export 'LineTrackingRound.dart';
 export 'LineTrackingTeam.dart';
+export 'MazeTeam.dart';
 export 'TotalScore.dart';
 
 class ModelProvider implements amplify_core.ModelProviderInterface {
   @override
-  String version = "241e3070351eac93c67be238bfdf834e";
+  String version = "f56aa2bfee7ab37cb5d15bd004274d48";
   @override
-  List<amplify_core.ModelSchema> modelSchemas = [CheckPoint.schema, LineTrackingMap.schema, LineTrackingRound.schema, LineTrackingTeam.schema];
+  List<amplify_core.ModelSchema> modelSchemas = [CheckPoint.schema, LineTrackingMap.schema, LineTrackingRound.schema, LineTrackingTeam.schema, MazeTeam.schema];
   @override
   List<amplify_core.ModelSchema> customTypeSchemas = [CheckPointScore.schema, TotalScore.schema];
   static final ModelProvider _instance = ModelProvider();
@@ -56,6 +58,8 @@ class ModelProvider implements amplify_core.ModelProviderInterface {
         return LineTrackingRound.classType;
       case "LineTrackingTeam":
         return LineTrackingTeam.classType;
+      case "MazeTeam":
+        return MazeTeam.classType;
       default:
         throw Exception("Failed to find model in model provider for model name: " + modelName);
     }
